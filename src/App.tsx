@@ -38,6 +38,7 @@ type Project = {
   features?: string[]
   gallery?: string[]
   galleryDesktop?: string[]
+  galleryDesktopCaptions?: (string | undefined)[]
   galleryMobile?: string[]
 }
 
@@ -62,7 +63,7 @@ const services = [
         "Кнопки связи и заявки",
         "Удобная мобильная навигация",
       ],
-      note: "Ваше цифровое пространство, которое всегда под рукой — достаточно одной ссылки.",
+      note: "Одна ссылка вместо разрозненных контактов, сторис и сообщений.",
     },
   },
   {
@@ -75,7 +76,7 @@ const services = [
       eyebrow: "Услуги / Лендинг",
       title: "Одна история — один точный маршрут",
       intro:
-        "Лендинг раскрывает ценность предложения и мягко ведёт посетителя к заявке, покупке или знакомству.",
+        "Лендинг показывает, в чём польза предложения, и ведёт к заявке, покупке или знакомству.",
       points: [
         "Анализ задачи и аудитории",
         "Смысловая структура и прототип",
@@ -88,14 +89,14 @@ const services = [
   {
     n: "03",
     title: "Многостраничный сайт",
-    text: "Цельная цифровая система для бизнеса с несколькими направлениями, услугами и разделами.",
+    text: "Сайт из нескольких разделов: направления, услуги и навигация между ними.",
     fit: "бренду важно подробно рассказать о себе и выстроить удобную навигацию.",
     visual: "pages",
     detail: {
       eyebrow: "Услуги / Многостраничный сайт",
-      title: "Пространство для большого бренда",
+      title: "Несколько разделов — одна система",
       intro:
-        "Сайт с продуманной архитектурой, в которой каждый раздел продолжает общую историю и решает свою задачу.",
+        "У каждого раздела своя задача, а оформление, тон и навигация остаются общими.",
       points: [
         "Анализ и карта разделов",
         "Сценарии и логика переходов",
@@ -180,7 +181,7 @@ const projects: Project[] = [
     title: "Астера",
     niche: "Глэмпинг в Башкирии",
     description:
-      "«Астера» — концепция авторского лендинга для глэмпинга в Башкирии. Проект посвящён отдыху на природе, вдали от городской суеты, среди лесов, гор и живописных пейзажей. Локация — природный парк Зилим, неподалёку от деревни Толпарово. Рядом находятся река Зилим, горы Кук-Таш и Мамбет. Основная задача — передать атмосферу уединения, спокойствия и единения с природой через визуальный язык сайта: тёмно-оливковую палитру, кинематографичные пейзажи, асимметричную журнальную композицию, тонкие линии и топографические контуры, крупную типографику и рукописные акценты.",
+      "Авторский лендинг глэмпинга «Астера» в природном парке Зилим, рядом с деревней Толпарово. Поблизости река Зилим и горы Кук-Таш и Мамбет. Сайт показывает уединённый отдых среди леса и гор: тёмно-оливковая палитра, крупные пейзажи, асимметричная журнальная вёрстка, тонкие линии, топографические контуры и рукописные акценты.",
     visual: "astera",
     image: asteraPreview,
     features: [
@@ -197,7 +198,7 @@ const projects: Project[] = [
     title: "Маркетплейс",
     niche: "Африканский marketplace",
     description:
-      "Концепция африканского маркетплейса, созданного с учётом культурных и эстетических особенностей мусульманской аудитории. Платформа объединяет продавцов и покупателей в едином пространстве для размещения объявлений, поиска товаров и услуг, а также удобного взаимодействия между пользователями. Визуальная концепция сочетает современную структуру маркетплейса в духе Avito с элементами исламской эстетики: глубокий зелёный цвет, золотые акценты, песочные оттенки, традиционные орнаменты и архитектурные мотивы.",
+      "Концепция маркетплейса для мусульманской аудитории: объявления, поиск товаров и услуг, кабинеты продавца и покупателя. Структура близка к привычному классифайду, оформление — к исламской эстетике: глубокий зелёный, золото, песочные оттенки, орнамент и архитектурные мотивы.",
     visual: "marketplace",
     image: marketplacePreview,
     features: [
@@ -213,6 +214,11 @@ const projects: Project[] = [
       marketplaceAds,
       marketplaceModeration,
     ],
+    galleryDesktopCaptions: [
+      undefined,
+      "Личный кабинет пользователя",
+      "Панель модерации объявлений",
+    ],
     galleryMobile: [
       marketplaceMobileHome,
       marketplaceMobileAds,
@@ -226,7 +232,7 @@ const projects: Project[] = [
     niche: "Киберпанк-портфолио full-stack разработчика",
     label: "Лендинг / Концепт",
     description:
-      "Персональный сайт-портфолио full-stack разработчика Артёма. Концепция построена вокруг эстетики киберпанка, футуристичных технологий и цифровой идентичности. Визуальная концепция сочетает насыщенный красный цвет, глубокий чёрный фон, неоновые акценты, футуристичную типографику и CGI-персонажей с кибернетическими элементами. Структура сайта включает главную страницу, информацию о разработчике, технологический стек, портфолио проектов и контакты. Отдельный акцент сделан на презентации проекта RUBIN BOT — автоматизированного игрового бота для Discord-сообществ.",
+      "Персональный сайт-портфолио full-stack разработчика Артёма — пространство, где характер автора читается с первого экрана. Визуальная концепция опирается на футуристичную эстетику киберпанка: глубокий тёмный фон, насыщенный красный, мягкое свечение акцентов и выразительная типографика. Вместе они складывают цельную цифровую идентичность — смелую, современную и запоминающуюся. Сайт ведёт от главной страницы к знакомству с разработчиком, обзору технологий, портфолио проектов и контактам, сохраняя единый визуальный ритм на всём пути.",
     visual: "bug8ear",
     image: bug8earPreview,
     gallery: [bug8earPreview, bug8earDetail],
@@ -261,8 +267,10 @@ const steps = [
   ],
 ]
 
-const CONTACT_EMAIL = "yana.moskvina.9@yandex.ru"
-const FORM_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`
+const CONTACT_EMAIL = "yana.moskwina.99@gmail.com"
+const WEB3FORMS_ACCESS_KEY = "3b56c485-bceb-4c31-9150-47b5db077c2b"
+const FORM_ENDPOINT = "https://api.web3forms.com/submit"
+const FORM_TIMEOUT_MS = 15000
 
 const faqs = [
   [
@@ -319,7 +327,11 @@ function CloseIcon() {
   )
 }
 
-function SocialIcon({ name }: { name: "instagram" | "telegram" | "max" }) {
+function SocialIcon({
+  name,
+}: {
+  name: "instagram" | "telegram" | "max" | "mail" | "phone"
+}) {
   if (name === "instagram") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -333,6 +345,21 @@ function SocialIcon({ name }: { name: "instagram" | "telegram" | "max" }) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m3 11 17-7-4 16-5.7-5-3.5 2.7.7-5.2L17 7l-6.7 8" />
+      </svg>
+    )
+  }
+  if (name === "mail") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="5.5" width="17" height="13" rx="1.5" />
+        <path d="m4.5 7.5 7.5 6 7.5-6" />
+      </svg>
+    )
+  }
+  if (name === "phone") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8.2 4.8h2.2l1.1 2.6-1.4 1.4a12 12 0 0 0 5.1 5.1l1.4-1.4 2.6 1.1v2.2c0 .7-.5 1.2-1.2 1.2A14.2 14.2 0 0 1 7 6c0-.7.5-1.2 1.2-1.2Z" />
       </svg>
     )
   }
@@ -388,6 +415,8 @@ export default function App() {
   const [cookieReady, setCookieReady] = useState(false)
   const [cookiePreference, setCookiePreference] = useState<string | null>(null)
   const [cookieDetailsOpen, setCookieDetailsOpen] = useState(false)
+  const [showToTop, setShowToTop] = useState(false)
+  const [toTopLift, setToTopLift] = useState(22)
   const priceSectionRef = useRef<HTMLElement>(null)
   const closeTimerRef = useRef<number | null>(null)
   const briefNameRef = useRef<HTMLInputElement>(null)
@@ -471,6 +500,34 @@ export default function App() {
     }
     setCookieReady(true)
   }, [])
+
+  useEffect(() => {
+    const hero = document.getElementById("top")
+    if (!hero) return
+    const observer = new IntersectionObserver(([entry]) => {
+      setShowToTop(!entry.isIntersecting)
+    })
+    observer.observe(hero)
+    return () => observer.disconnect()
+  }, [])
+
+  const cookieVisible = cookieReady && !cookiePreference
+
+  useEffect(() => {
+    if (!cookieVisible) {
+      setToTopLift(22)
+      return
+    }
+    const banner = document.querySelector(".cookie-banner")
+    if (!banner) return
+    const update = () => {
+      setToTopLift(Math.round(banner.getBoundingClientRect().height) + 36)
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(banner)
+    return () => observer.disconnect()
+  }, [cookieVisible, cookieDetailsOpen])
 
   useEffect(() => {
     document.body.style.overflow = modalOpen ? "hidden" : ""
@@ -613,7 +670,18 @@ export default function App() {
       return
     }
 
+    if (!WEB3FORMS_ACCESS_KEY) {
+      setSubmitState("error")
+      setSubmitMessage(
+        `Форма ещё не подключена к почте. Напишите напрямую на ${CONTACT_EMAIL} или в Telegram — отвечу лично.`,
+      )
+      return
+    }
+
     setSubmitState("sending")
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), FORM_TIMEOUT_MS)
+    const contactLooksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)
     try {
       const response = await fetch(FORM_ENDPOINT, {
         method: "POST",
@@ -621,39 +689,37 @@ export default function App() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
+        signal: controller.signal,
         body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          // Plain subject lands in Gmail Primary more reliably than long dashy titles.
+          subject: `Новая заявка: ${name}`,
+          from_name: "Yana Moskvina",
           name,
+          // Web3Forms uses `email` as Reply-To. Only send it when the visitor
+          // actually left an address — never point Reply-To at the inbox itself.
+          ...(contactLooksLikeEmail ? { email: contact } : {}),
           contact,
           format: format || "Не выбрано",
-          message: task,
-          _subject: `Заявка с сайта — ${name}`,
-          _template: "table",
-          _captcha: "false",
+          message: [
+            "Новая заявка с сайта yana-moskvina.",
+            "",
+            `Имя: ${name}`,
+            `Контакт: ${contact}`,
+            `Формат: ${format || "Не выбрано"}`,
+            "",
+            "Задача:",
+            task,
+          ].join("\n"),
         }),
       })
       const payload = (await response.json().catch(() => null)) as {
-        success?: string | boolean
+        success?: boolean
         message?: string
       } | null
-      const accepted =
-        response.ok &&
-        (payload?.success === true ||
-          payload?.success === "true" ||
-          payload?.success === undefined)
-      const needsActivation =
-        typeof payload?.message === "string" &&
-        /activation|activate form/i.test(payload.message)
 
-      if (needsActivation) {
-        setSubmitState("error")
-        setSubmitMessage(
-          `Форма почти готова: на ${CONTACT_EMAIL} уже ушло письмо от FormSubmit со ссылкой Activate Form. Откройте его (проверьте «Спам») и подтвердите почту — после этого заявки начнут приходить.`,
-        )
-        return
-      }
-
-      if (!accepted) {
-        throw new Error(payload?.message || `FormSubmit responded with ${response.status}`)
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.message || `Form API responded with ${response.status}`)
       }
 
       setSubmitState("success")
@@ -666,6 +732,8 @@ export default function App() {
       setSubmitMessage(
         "Не удалось отправить заявку. Напишите напрямую на почту или в Telegram — отвечу лично.",
       )
+    } finally {
+      window.clearTimeout(timeoutId)
     }
   }
 
@@ -737,14 +805,15 @@ export default function App() {
             <i>с характером</i>
           </h1>
           <p>
-            Создаю сайты, в которых эстетика поддерживает смысл, а продуманная
-            структура ведёт человека к нужному действию.
+            Делаю сайты, в которых внешний вид не спорит с задачей: структура
+            понятна, а путь к заявке короткий.
           </p>
           <span className="hero-formats">
             Цифровые визитки · Лендинги · Многостраничные сайты
           </span>
           <button
             className="primary-button"
+            type="button"
             onClick={openBrief}
           >
             Обсудить проект <Arrow />
@@ -823,10 +892,9 @@ export default function App() {
           <span className="dropcap">Я</span>
           <p>
             {" "}
-            — Москвина Яна, автор цифровых страниц. Создаю сайты, в которых
-            эстетика соединяется с продуманной структурой и удобством. Мне важно
-            почувствовать характер проекта, понять его аудиторию и задачу, а не
-            просто красиво оформить страницу.
+            — Москвина Яна, веб-дизайнер. Собираю страницы для услуг, запусков
+            и брендов. Сначала разбираюсь в задаче и аудитории, затем в
+            структуре — и только потом в визуале.
           </p>
           <p>
             Образование в сфере маркетинга и рекламы помогает мне точнее видеть
@@ -854,13 +922,13 @@ export default function App() {
         <div className="section-heading">
           <span className="eyebrow">Услуги / 01—03</span>
           <h2>
-            Что можем
+            Что могу
             <br />
             <i>создать?</i>
           </h2>
           <p>
-            Три формата для разных задач — от точной онлайн-визитки до
-            полноценной цифровой системы.
+            Три формата под разные задачи: визитка, лендинг и сайт из
+            нескольких разделов.
           </p>
         </div>
         <div className="service-list">
@@ -990,8 +1058,8 @@ export default function App() {
             </h2>
           </div>
           <p>
-            Живые проекты и авторские концепции — сайты с характером для разных
-            сфер.
+            Запущенные сайты и концепты: кемпинг, глэмпинг, маркетплейс и
+            портфолио разработчика.
           </p>
         </div>
         <div className="filters" role="group" aria-label="Фильтр проектов">
@@ -1105,26 +1173,32 @@ export default function App() {
               Расскажите, что хочется создать. Начнём с живого разговора — без
               сложных анкет и готовых решений.
             </p>
-            <button className="light-button" onClick={openBrief}>
+            <button className="light-button" type="button" onClick={openBrief}>
               Обсудить проект <Arrow />
             </button>
             <div className="socials">
               <a
                 href="https://www.instagram.com/elfiaannka/"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
               >
                 <SocialIcon name="instagram" /> Instagram <Arrow />
               </a>
-              <a href="https://t.me/anntelegram" target="_blank" rel="noreferrer">
+              <a href="https://t.me/anntelegram" target="_blank" rel="noreferrer noopener">
                 <SocialIcon name="telegram" /> Telegram <Arrow />
               </a>
               <a
                 href="https://max.ru/u/f9LHodD0cOJc1XjY6e_iWtirE3b_NsmNwEy8XSkJaU2FLf0Z5PYJNrfUfvY"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
               >
                 <SocialIcon name="max" /> MAX <Arrow />
+              </a>
+              <a href="mailto:yana.moskwina.99@gmail.com">
+                <SocialIcon name="mail" /> Почта <Arrow />
+              </a>
+              <a href="tel:+79222952912" aria-label="Позвонить +7 (922) 295-29-12">
+                <SocialIcon name="phone" /> Телефон <Arrow />
               </a>
             </div>
           </div>
@@ -1211,11 +1285,19 @@ export default function App() {
                     <div className="project-gallery-section">
                       <h3>Десктопная версия</h3>
                       <div className="project-gallery-desktop">
-                        {project.galleryDesktop.map((shot, index) => (
-                          <figure key={`${project.title}-desktop-${index}`}>
-                            <img src={shot} alt="" loading="lazy" />
-                          </figure>
-                        ))}
+                        {project.galleryDesktop.map((shot, index) => {
+                          const caption = project.galleryDesktopCaptions?.[index]
+                          return (
+                            <figure key={`${project.title}-desktop-${index}`}>
+                              <img
+                                src={shot}
+                                alt={caption || ""}
+                                loading="lazy"
+                              />
+                              {caption ? <figcaption>{caption}</figcaption> : null}
+                            </figure>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -1257,7 +1339,7 @@ export default function App() {
                   className="project-live-link"
                   href={project.url}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Открыть сайт <Arrow />
                 </a>
@@ -1339,7 +1421,7 @@ export default function App() {
                         className="primary-button"
                         href="https://t.me/anntelegram"
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noreferrer noopener"
                       >
                         Написать в Telegram <Arrow />
                       </a>
@@ -1364,7 +1446,7 @@ export default function App() {
                         className="primary-button"
                         href="https://t.me/anntelegram"
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noreferrer noopener"
                       >
                         Написать в Telegram <Arrow />
                       </a>
@@ -1554,7 +1636,7 @@ export default function App() {
                 </p>
                 <p>
                   Заявки доставляются на электронную почту оператора через сервис
-                  FormSubmit. Аналитические и рекламные cookie на сайте не
+                  Web3Forms. Аналитические и рекламные cookie на сайте не
                   подключены. Выбор в баннере cookie сохраняется только локально
                   в вашем браузере.
                 </p>
@@ -1631,6 +1713,22 @@ export default function App() {
           </div>
         </aside>
       )}
+      <button
+        type="button"
+        className={showToTop && !modalOpen ? "to-top visible" : "to-top"}
+        style={{ bottom: toTopLift }}
+        aria-label="Наверх"
+        aria-hidden={!showToTop || modalOpen}
+        tabIndex={showToTop && !modalOpen ? 0 : -1}
+        onClick={() => {
+          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" })
+        }}
+      >
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" />
+        </svg>
+      </button>
     </main>
   )
 }
