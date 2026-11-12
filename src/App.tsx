@@ -136,7 +136,7 @@ const priceOffers: Array<{ title: string; price: string; detail: Leaflet }> = [
     },
   },
   {
-    title: "Сайт с индивидуальной админ-панелью",
+    title: "Сайт с админ-панелью",
     price: "от 30 000 ₽",
     detail: {
       eyebrow: "Прайс / Основное предложение",
