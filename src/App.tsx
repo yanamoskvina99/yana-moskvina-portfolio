@@ -1,4 +1,12 @@
-import { FormEvent, useEffect, useRef, useState } from "react"
+import {
+  CSSProperties,
+  ElementType,
+  FormEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
 import yanaFlowers from "./assets/yana-flowers.jpg"
 import yanaEditorial from "./assets/yana-editorial.jpg"
 import yanaPortrait from "./assets/yana-portrait.jpg"
@@ -319,6 +327,78 @@ function Arrow() {
   )
 }
 
+function CharReveal({
+  text,
+  as: Tag = "span",
+  className,
+  delay = 0,
+  stagger = 28,
+  mode = "scroll",
+}: {
+  text: string
+  as?: ElementType
+  className?: string
+  delay?: number
+  stagger?: number
+  mode?: "auto" | "scroll"
+}) {
+  let charIndex = 0
+
+  return (
+    <Tag
+      className={["char-reveal", mode === "auto" ? "is-played" : "", className]
+        .filter(Boolean)
+        .join(" ")}
+      {...(mode === "scroll" ? { "data-chars": "" } : {})}
+      aria-label={text}
+    >
+      <span className="char-reveal-visual" aria-hidden="true">
+        {text.split(/(\s+)/).map((chunk, chunkIndex) => {
+          if (chunk === "") return null
+          if (/^\s+$/.test(chunk)) {
+            return Array.from(chunk).map((char, spaceIndex) => {
+              const index = charIndex++
+              return (
+                <span
+                  key={`space-${chunkIndex}-${spaceIndex}`}
+                  className="char char-space"
+                  style={
+                    {
+                      "--char-delay": `${delay + index * stagger}ms`,
+                    } as CSSProperties
+                  }
+                >
+                  {"\u00A0"}
+                </span>
+              )
+            })
+          }
+          return (
+            <span className="char-word" key={`word-${chunkIndex}-${chunk}`}>
+              {Array.from(chunk).map((char) => {
+                const index = charIndex++
+                return (
+                  <span
+                    key={`${index}-${char}`}
+                    className="char"
+                    style={
+                      {
+                        "--char-delay": `${delay + index * stagger}ms`,
+                      } as CSSProperties
+                    }
+                  >
+                    {char}
+                  </span>
+                )
+              })}
+            </span>
+          )
+        })}
+      </span>
+    </Tag>
+  )
+}
+
 function CloseIcon() {
   return (
     <svg viewBox="0 0 14 14" aria-hidden="true">
@@ -415,9 +495,11 @@ export default function App() {
   const [cookieReady, setCookieReady] = useState(false)
   const [cookiePreference, setCookiePreference] = useState<string | null>(null)
   const [cookieDetailsOpen, setCookieDetailsOpen] = useState(false)
-  const [showToTop, setShowToTop] = useState(false)
+  const [toTopOpacity, setToTopOpacity] = useState(0)
+  const [toTopSurface, setToTopSurface] = useState<"light" | "dark">("light")
   const [toTopLift, setToTopLift] = useState(22)
   const priceSectionRef = useRef<HTMLElement>(null)
+  const footerTopRef = useRef<HTMLAnchorElement>(null)
   const closeTimerRef = useRef<number | null>(null)
   const briefNameRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLElement | null>(null)
@@ -501,14 +583,53 @@ export default function App() {
     setCookieReady(true)
   }, [])
 
-  useEffect(() => {
-    const hero = document.getElementById("top")
-    if (!hero) return
-    const observer = new IntersectionObserver(([entry]) => {
-      setShowToTop(!entry.isIntersecting)
+  useLayoutEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)")
+    if (reduce.matches) return
+    document.documentElement.classList.add("js-reveal")
+    const nodes = document.querySelectorAll("[data-reveal], [data-chars]")
+    if (nodes.length === 0) {
+      return () => {
+        document.documentElement.classList.remove("js-reveal")
+      }
+    }
+    const revealNode = (target: HTMLElement) => {
+      if (target.hasAttribute("data-chars")) {
+        const heading = target.closest("h1, h2")
+        const group = heading
+          ? heading.querySelectorAll<HTMLElement>("[data-chars]")
+          : [target]
+        group.forEach((node) => {
+          node.classList.add("is-played")
+          observer.unobserve(node)
+        })
+        return
+      }
+      target.classList.add("is-revealed")
+      observer.unobserve(target)
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          revealNode(entry.target as HTMLElement)
+        })
+      },
+      { threshold: 0.05, rootMargin: "0px 0px -6% 0px" },
+    )
+    const isInView = (node: Element) => {
+      const rect = node.getBoundingClientRect()
+      const viewH = window.innerHeight
+      return rect.top < viewH * 0.94 && rect.bottom > viewH * 0.08
+    }
+    nodes.forEach((node) => {
+      observer.observe(node)
+      if (isInView(node)) revealNode(node as HTMLElement)
     })
-    observer.observe(hero)
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      document.documentElement.classList.remove("js-reveal")
+    }
   }, [])
 
   const cookieVisible = cookieReady && !cookiePreference
@@ -528,6 +649,73 @@ export default function App() {
     observer.observe(banner)
     return () => observer.disconnect()
   }, [cookieVisible, cookieDetailsOpen])
+
+  useEffect(() => {
+    const hero = document.getElementById("top")
+    const footerLink = footerTopRef.current
+    if (!hero || !footerLink) return
+
+    let heroInView = true
+    let frame = 0
+
+    const updateOpacity = () => {
+      frame = 0
+      const viewH = window.innerHeight
+      const probeY = Math.max(0, viewH - toTopLift - 14)
+      const surfaces = document.querySelectorAll<HTMLElement>(
+        "[data-surface]:not(.to-top)",
+      )
+      let surface: "light" | "dark" = "light"
+      surfaces.forEach((node) => {
+        const box = node.getBoundingClientRect()
+        if (box.top <= probeY && box.bottom >= probeY) {
+          surface = node.dataset.surface === "dark" ? "dark" : "light"
+        }
+      })
+      setToTopSurface(surface)
+
+      if (modalOpen || heroInView) {
+        setToTopOpacity(0)
+        return
+      }
+      const rect = footerLink.getBoundingClientRect()
+      const fadeStart = viewH + 24
+      const fadeEnd = viewH - 56
+      let next = 1
+      if (rect.top <= fadeEnd) next = 0
+      else if (rect.top < fadeStart) {
+        next = (rect.top - fadeEnd) / (fadeStart - fadeEnd)
+      }
+      setToTopOpacity(Math.max(0, Math.min(1, next)))
+    }
+
+    const requestUpdate = () => {
+      if (frame) return
+      frame = window.requestAnimationFrame(updateOpacity)
+    }
+
+    const heroObserver = new IntersectionObserver(([entry]) => {
+      heroInView = entry.isIntersecting
+      requestUpdate()
+    })
+    heroObserver.observe(hero)
+    window.addEventListener("scroll", requestUpdate, { passive: true })
+    window.addEventListener("resize", requestUpdate)
+    requestUpdate()
+
+    return () => {
+      heroObserver.disconnect()
+      window.removeEventListener("scroll", requestUpdate)
+      window.removeEventListener("resize", requestUpdate)
+      if (frame) window.cancelAnimationFrame(frame)
+    }
+  }, [modalOpen, toTopLift])
+
+  const scrollToTop = (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" })
+  }
 
   useEffect(() => {
     document.body.style.overflow = modalOpen ? "hidden" : ""
@@ -795,40 +983,65 @@ export default function App() {
         </button>
       </header>
 
-      <section className="hero" id="top">
+      <section className="hero" id="top" data-surface="dark">
         <div className="hero-copy">
           <h1>
-            Цифровые
+            <CharReveal text="Цифровые" mode="auto" delay={60} stagger={34} />
             <br />
-            пространства
+            <CharReveal
+              text="пространства"
+              mode="auto"
+              delay={320}
+              stagger={32}
+            />
             <br />
-            <i>с характером</i>
+            <CharReveal
+              text="с характером"
+              as="i"
+              className="hero-line-italic"
+              mode="auto"
+              delay={720}
+              stagger={36}
+            />
           </h1>
-          <p>
+          <p className="hero-reveal" style={{ "--d": "380ms" } as CSSProperties}>
             Делаю сайты, в которых внешний вид не спорит с задачей: структура
             понятна, а путь к заявке короткий.
           </p>
-          <span className="hero-formats">
+          <span
+            className="hero-formats hero-reveal"
+            style={{ "--d": "480ms" } as CSSProperties}
+          >
             Цифровые визитки · Лендинги · Многостраничные сайты
           </span>
           <button
-            className="primary-button"
+            className="primary-button hero-reveal hero-cta"
             type="button"
+            style={{ "--d": "580ms" } as CSSProperties}
             onClick={openBrief}
           >
             Обсудить проект <Arrow />
           </button>
         </div>
-        <figure className="hero-portrait">
+        <figure
+          className="hero-portrait hero-reveal"
+          style={{ "--d": "220ms" } as CSSProperties}
+        >
           <div className="hero-portrait-frame">
             <img src={yanaFlowers} alt="Яна Москвина с букетом цветов" />
           </div>
         </figure>
-        <div className="hero-manifesto">ЭСТЕТИКА / СТРУКТУРА / СМЫСЛ</div>
+        <div
+          className="hero-manifesto hero-reveal"
+          style={{ "--d": "680ms" } as CSSProperties}
+        >
+          ЭСТЕТИКА / СТРУКТУРА / СМЫСЛ
+        </div>
       </section>
 
       <div
         className="marquee"
+        data-surface="light"
         aria-label="Веб-дизайн, цифровые страницы, визуальные концепции, продуманная структура, сайты с характером, дизайн для брендов, эстетика и смысл"
       >
         <div>
@@ -860,18 +1073,23 @@ export default function App() {
         </div>
       </div>
 
-      <section className="about section-pad" id="about">
+      <section className="about section-pad" id="about" data-surface="light">
         <div className="about-title">
           <span className="eyebrow">За кадром / Обо мне</span>
           <h2>
-            <span className="about-title-line">За дизайном</span>
+            <CharReveal
+              text="За дизайном"
+              className="about-title-line"
+              stagger={30}
+            />
             <br />
             <span className="about-title-line">
-              стоит <i>человек</i>
+              <CharReveal text="стоит " delay={280} stagger={30} />
+              <CharReveal text="человек" as="i" delay={420} stagger={34} />
             </span>
           </h2>
         </div>
-        <figure className="about-main-photo">
+        <figure className="about-main-photo" data-reveal>
           <img
             src={yanaEditorial}
             alt="Яна Москвина у зеркала"
@@ -918,13 +1136,13 @@ export default function App() {
         </div>
       </section>
 
-      <section className="services section-pad" id="services">
+      <section className="services section-pad" id="services" data-surface="light">
         <div className="section-heading">
           <span className="eyebrow">Услуги / 01—03</span>
           <h2>
-            Что могу
+            <CharReveal text="Что могу" stagger={30} />
             <br />
-            <i>создать?</i>
+            <CharReveal text="создать?" as="i" delay={260} stagger={34} />
           </h2>
           <p>
             Три формата под разные задачи: визитка, лендинг и сайт из
@@ -979,14 +1197,15 @@ export default function App() {
         id="price"
         ref={priceSectionRef}
         aria-labelledby="price-title"
+        data-surface="dark"
       >
         <div className="price-sticky">
           <div className="price-heading">
             <span className="eyebrow">Стоимость / 01—03</span>
             <h2 id="price-title">
-              Стоимость
+              <CharReveal text="Стоимость" stagger={30} />
               <br />
-              <i>работы</i>
+              <CharReveal text="работы" as="i" delay={280} stagger={34} />
             </h2>
             <p>Прокрутите, чтобы открыть письмо</p>
           </div>
@@ -1040,21 +1259,17 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="price-progress" aria-hidden="true">
-            <span>Листайте</span>
-            <i />
-          </div>
         </div>
       </section>
 
-      <section className="portfolio section-pad" id="portfolio">
+      <section className="portfolio section-pad" id="portfolio" data-surface="dark">
         <div className="portfolio-head">
           <div>
             <span className="eyebrow">Избранные работы / 2026</span>
             <h2>
-              Мои работы
+              <CharReveal text="Мои работы" stagger={30} />
               <br />
-              <i>и концепты</i>
+              <CharReveal text="и концепты" as="i" delay={280} stagger={34} />
             </h2>
           </div>
           <p>
@@ -1105,15 +1320,22 @@ export default function App() {
         </div>
       </section>
 
-      <section className="process section-pad">
+      <section className="process section-pad" data-surface="dark">
         <div className="process-intro">
           <span className="eyebrow">Процесс / 01—05</span>
           <h2>
-            От идеи до
+            <CharReveal
+              text="От идеи до"
+              className="process-title-line"
+              stagger={30}
+            />
             <br />
-            готового <i>сайта</i>
+            <span className="process-title-line">
+              <CharReveal text="готового " delay={280} stagger={30} />
+              <CharReveal text="сайта" as="i" delay={500} stagger={34} />
+            </span>
           </h2>
-          <img src={yanaPortrait} alt="Яна Москвина" loading="lazy" />
+          <img src={yanaPortrait} alt="Яна Москвина" loading="lazy" data-reveal />
         </div>
         <div className="steps">
           {steps.map(([n, title, text]) => (
@@ -1126,12 +1348,13 @@ export default function App() {
         </div>
       </section>
 
-      <section className="faq section-pad" id="faq">
+      <section className="faq section-pad" id="faq" data-surface="light">
         <div className="faq-heading">
           <span className="eyebrow">FAQ</span>
           <h2>
-            Вопрос —<br />
-            <i>ответ</i>
+            <CharReveal text="Вопрос —" stagger={30} />
+            <br />
+            <CharReveal text="ответ" as="i" delay={260} stagger={36} />
           </h2>
         </div>
         <div className="faq-list">
@@ -1160,13 +1383,18 @@ export default function App() {
         </div>
       </section>
 
-      <section className="final-cta" id="contact">
+      <section className="final-cta" id="contact" data-surface="dark">
         <div className="final-cta-main">
           <span className="eyebrow">Есть идея для проекта?</span>
           <h2>
-            <span className="cta-line">Ваш следующий</span>
-            <span className="cta-line">проект начинается</span>
-            <i>здесь</i>
+            <CharReveal text="Ваш следующий" className="cta-line" stagger={28} />
+            <CharReveal
+              text="проект начинается"
+              className="cta-line"
+              delay={360}
+              stagger={28}
+            />
+            <CharReveal text="здесь" as="i" delay={820} stagger={36} />
           </h2>
           <div className="final-cta-group">
             <p>
@@ -1222,7 +1450,15 @@ export default function App() {
           >
             Настройки файлов cookie
           </button>
-          <a href="#top">
+          <a
+            href="#top"
+            ref={footerTopRef}
+            className="footer-top-link"
+            style={{ opacity: 1 - toTopOpacity }}
+            tabIndex={toTopOpacity > 0.5 ? -1 : 0}
+            aria-hidden={toTopOpacity > 0.5}
+            onClick={scrollToTop}
+          >
             Наверх <Arrow />
           </a>
         </div>
@@ -1713,22 +1949,24 @@ export default function App() {
           </div>
         </aside>
       )}
-      <button
-        type="button"
-        className={showToTop && !modalOpen ? "to-top visible" : "to-top"}
-        style={{ bottom: toTopLift }}
+      <a
+        href="#top"
+        className="to-top"
+        data-on-surface={toTopSurface}
+        style={
+          {
+            bottom: toTopLift,
+            "--to-top-opacity": modalOpen ? 0 : toTopOpacity,
+            pointerEvents: !modalOpen && toTopOpacity > 0.08 ? "auto" : "none",
+          } as CSSProperties
+        }
         aria-label="Наверх"
-        aria-hidden={!showToTop || modalOpen}
-        tabIndex={showToTop && !modalOpen ? 0 : -1}
-        onClick={() => {
-          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" })
-        }}
+        aria-hidden={modalOpen || toTopOpacity < 0.08}
+        tabIndex={!modalOpen && toTopOpacity > 0.08 ? 0 : -1}
+        onClick={scrollToTop}
       >
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" />
-        </svg>
-      </button>
+        Наверх <Arrow />
+      </a>
     </main>
   )
 }
