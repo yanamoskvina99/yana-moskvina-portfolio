@@ -1,0 +1,15 @@
+{
+  "title": "Яна Москвина — веб-дизайнер",
+  "description": "Портфолио веб-дизайнера Яны Москвиной: сайты с характером для брендов, экспертов и бизнеса. Цифровые визитки, лендинги и многостраничные проекты.",
+  "language": "ru",
+  "robots": {
+    "index": false
+  },
+  "icons": {
+    "icon": "/favicon.svg"
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
