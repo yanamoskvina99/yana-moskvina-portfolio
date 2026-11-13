@@ -1048,7 +1048,7 @@ section[id] { scroll-margin-top: 28px; }
   white-space: nowrap;
 }
 .process h2 i { color: var(--accent-on-dark); }
-.process-intro img { width: 72%; margin-left: auto; height: 480px; object-fit: cover; object-position: 50% 30%; }
+.process-intro img { width: 72%; margin-left: auto; height: 480px; object-fit: cover; object-position: 50% 72%; }
 .steps { border-top: 1px solid rgba(245,240,229,.2); }
 .steps article { display: grid; grid-template-columns: .2fr 1.2fr 1fr; gap: 20px; padding: 36px 0; border-bottom: 1px solid rgba(245,240,229,.2); }
 .steps span { font: var(--text-num); color: var(--accent-on-dark); }
