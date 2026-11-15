@@ -7,6 +7,7 @@ import {
 } from "../../content/api"
 import { defaultContent } from "../../content/defaults"
 import type { SectionKey } from "../../content/types"
+import { ImageField } from "../ImageField"
 import { Field, PageHeader, useToast } from "../ui"
 
 type Props = {
@@ -14,7 +15,13 @@ type Props = {
   title: string
   eyebrow: string
   defaults: Record<string, string | string[]>
-  fields: Array<{ key: string; label: string; multiline?: boolean }>
+  fields: Array<{
+    key: string
+    label: string
+    multiline?: boolean
+    image?: boolean
+    hint?: string
+  }>
   preview?: (data: Record<string, string>) => ReactNode
 }
 
@@ -158,15 +165,25 @@ export function SectionEditor({
       </PageHeader>
       {toast.banners}
       <div className="adm-card">
-        {fields.map((f) => (
-          <Field
-            key={f.key}
-            label={f.label}
-            value={data[f.key] ?? ""}
-            multiline={f.multiline}
-            onChange={(v) => setData((d) => ({ ...d, [f.key]: v }))}
-          />
-        ))}
+        {fields.map((f) =>
+          f.image ? (
+            <ImageField
+              key={f.key}
+              label={f.label}
+              hint={f.hint}
+              value={data[f.key] ?? ""}
+              onChange={(v) => setData((d) => ({ ...d, [f.key]: v }))}
+            />
+          ) : (
+            <Field
+              key={f.key}
+              label={f.label}
+              value={data[f.key] ?? ""}
+              multiline={f.multiline}
+              onChange={(v) => setData((d) => ({ ...d, [f.key]: v }))}
+            />
+          ),
+        )}
       </div>
       {preview ? <div className="adm-card">{preview(data)}</div> : null}
       {revisions.length > 0 && (
@@ -218,7 +235,12 @@ export function HomePage() {
         { key: "formats", label: "Подпись форматов" },
         { key: "ctaLabel", label: "Текст кнопки" },
         { key: "manifesto", label: "Манифест внизу" },
-        { key: "imageUrl", label: "URL изображения", multiline: true },
+        {
+          key: "imageUrl",
+          label: "Изображение героя",
+          image: true,
+          hint: "Загрузите файл или вставьте URL",
+        },
         { key: "imageAlt", label: "Alt изображения" },
       ]}
     />
@@ -238,14 +260,22 @@ export function AboutPage() {
         { key: "titleLine1", label: "Заголовок — строка 1" },
         { key: "titleLine2a", label: "Заголовок — строка 2a" },
         { key: "titleLine2b", label: "Заголовок — строка 2b (курсив)" },
-        { key: "mainImageUrl", label: "URL главного фото", multiline: true },
+        {
+          key: "mainImageUrl",
+          label: "Главное фото",
+          image: true,
+        },
         { key: "mainImageAlt", label: "Alt главного фото" },
         { key: "captionName", label: "Подпись — имя" },
         { key: "captionRole", label: "Подпись — роль" },
         { key: "quote", label: "Цитата", multiline: true },
         { key: "body1", label: "Текст 1", multiline: true },
         { key: "body2", label: "Текст 2", multiline: true },
-        { key: "detailImageUrl", label: "URL доп. фото", multiline: true },
+        {
+          key: "detailImageUrl",
+          label: "Доп. фото",
+          image: true,
+        },
         { key: "detailImageAlt", label: "Alt доп. фото" },
         { key: "asideNote", label: "Боковая заметка", multiline: true },
       ]}
@@ -270,7 +300,9 @@ export function ContactsPage() {
         { key: "instagram", label: "Instagram ник" },
         { key: "instagramUrl", label: "Instagram URL" },
         { key: "maxUrl", label: "MAX URL" },
-        { key: "ctaTitle", label: "CTA заголовок" },
+        { key: "ctaLine1", label: "CTA заголовок — строка 1" },
+        { key: "ctaLine2", label: "CTA заголовок — строка 2" },
+        { key: "ctaLine3", label: "CTA заголовок — строка 3 (курсив)" },
         { key: "ctaText", label: "CTA текст", multiline: true },
         { key: "ctaButton", label: "CTA кнопка" },
       ]}
@@ -284,7 +316,7 @@ export function SeoPage() {
     <SectionEditor
       sectionKey="seo"
       eyebrow="SEO"
-      title="Метаданные"
+      title="Метаданные и иконки"
       defaults={{ ...d }}
       fields={[
         { key: "title", label: "Title" },
@@ -293,7 +325,12 @@ export function SeoPage() {
         { key: "robots", label: "Robots" },
         { key: "ogTitle", label: "OG Title" },
         { key: "ogDescription", label: "OG Description", multiline: true },
-        { key: "ogImage", label: "OG Image URL" },
+        {
+          key: "ogImage",
+          label: "OG Image",
+          image: true,
+          hint: "Картинка для соцсетей (лучше 1200×630)",
+        },
         { key: "ogImageAlt", label: "OG Image Alt" },
         { key: "twitterTitle", label: "Twitter Title" },
         {
@@ -301,7 +338,23 @@ export function SeoPage() {
           label: "Twitter Description",
           multiline: true,
         },
-        { key: "twitterImage", label: "Twitter Image URL" },
+        {
+          key: "twitterImage",
+          label: "Twitter Image",
+          image: true,
+        },
+        {
+          key: "faviconUrl",
+          label: "Favicon",
+          image: true,
+          hint: "SVG или PNG. После публикации обновите вкладку (Cmd+Shift+R).",
+        },
+        {
+          key: "appleTouchIconUrl",
+          label: "Apple Touch Icon",
+          image: true,
+          hint: "PNG ~180×180 для иконки на iPhone",
+        },
       ]}
       preview={(data) => (
         <div>
@@ -311,6 +364,18 @@ export function SeoPage() {
             <div className="url">{data.canonical || "https://ym-designer.ru/"}</div>
             <div className="desc">{data.description || "Description"}</div>
           </div>
+          {data.faviconUrl ? (
+            <p style={{ marginTop: 12, fontSize: 13 }}>
+              Favicon:{" "}
+              <img
+                src={data.faviconUrl}
+                alt=""
+                width={32}
+                height={32}
+                style={{ verticalAlign: "middle" }}
+              />
+            </p>
+          ) : null}
         </div>
       )}
     />

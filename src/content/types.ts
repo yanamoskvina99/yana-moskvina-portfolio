@@ -113,7 +113,9 @@ export type ContactsContent = {
   instagram: string
   instagramUrl: string
   maxUrl: string
-  ctaTitle: string
+  ctaLine1: string
+  ctaLine2: string
+  ctaLine3: string
   ctaText: string
   ctaButton: string
 }
@@ -130,6 +132,8 @@ export type SeoContent = {
   twitterTitle: string
   twitterDescription: string
   twitterImage: string
+  faviconUrl: string
+  appleTouchIconUrl: string
 }
 
 export type PortfolioIntro = {

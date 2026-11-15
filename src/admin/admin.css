@@ -332,6 +332,20 @@
   margin-bottom: 8px;
   background: #eee;
 }
+.adm-image-preview {
+  margin-bottom: 8px;
+  border: 1px solid var(--adm-line);
+  background: #fff;
+  max-width: 280px;
+  overflow: hidden;
+}
+.adm-image-preview img {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  background: #f3eee6;
+}
 
 .adm-stats {
   display: grid;

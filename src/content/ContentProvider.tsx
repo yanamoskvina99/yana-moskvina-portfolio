@@ -5,9 +5,16 @@ import {
   useState,
   type ReactNode,
 } from "react"
-import { fetchPublishedContent } from "./api"
+import { fetchPublishedContent, normalizeContacts } from "./api"
 import { defaultContent } from "./defaults"
 import type { SiteContent } from "./types"
+
+function withNormalizedContacts(content: SiteContent): SiteContent {
+  return {
+    ...content,
+    contacts: normalizeContacts(content.contacts),
+  }
+}
 
 type Ctx = {
   content: SiteContent
@@ -22,14 +29,16 @@ const ContentContext = createContext<Ctx>({
 })
 
 export function ContentProvider({ children }: { children: ReactNode }) {
-  const [content, setContent] = useState<SiteContent>(defaultContent)
+  const [content, setContent] = useState<SiteContent>(() =>
+    withNormalizedContacts(defaultContent),
+  )
   const [loading, setLoading] = useState(true)
 
   const refresh = async () => {
     setLoading(true)
     try {
       const next = await fetchPublishedContent()
-      setContent(next)
+      setContent(withNormalizedContacts(next))
     } finally {
       setLoading(false)
     }

@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from "../lib/supabase"
 import { defaultContent } from "./defaults"
 import type {
+  ContactsContent,
   FaqItem,
   PriceItem,
   ProjectItem,
@@ -14,6 +15,36 @@ function asRecord(v: unknown): Record<string, unknown> {
   return v && typeof v === "object" && !Array.isArray(v)
     ? (v as Record<string, unknown>)
     : {}
+}
+
+/** CTA must stay 3 short lines — old CMS saves put the whole phrase in one field. */
+export function normalizeContacts(raw: unknown): ContactsContent {
+  const base = defaultContent.contacts
+  const p = asRecord(raw)
+  const merged = { ...base, ...p } as ContactsContent & { ctaTitle?: string }
+  const line1 = String(merged.ctaLine1 || "")
+  const line2 = String(merged.ctaLine2 || "")
+  const line3 = String(merged.ctaLine3 || "")
+  const legacy = String(merged.ctaTitle || "")
+  const broken =
+    Boolean(legacy) ||
+    line1.split(/\s+/).filter(Boolean).length > 3 ||
+    /проект|начинается|здесь/i.test(line1)
+
+  if (broken) {
+    return {
+      ...merged,
+      ctaLine1: base.ctaLine1,
+      ctaLine2: base.ctaLine2,
+      ctaLine3: base.ctaLine3,
+    }
+  }
+  return {
+    ...merged,
+    ctaLine1: line1 || base.ctaLine1,
+    ctaLine2: line2 || base.ctaLine2,
+    ctaLine3: line3 || base.ctaLine3,
+  }
 }
 
 function mergeSection<T extends object>(base: T, patch: unknown): T {
@@ -79,10 +110,7 @@ export async function fetchPublishedContent(): Promise<SiteContent> {
         defaultContent.portfolioIntro,
         sectionMap.get("portfolio_intro"),
       ),
-      contacts: mergeSection(
-        defaultContent.contacts,
-        sectionMap.get("contacts"),
-      ),
+      contacts: normalizeContacts(sectionMap.get("contacts")),
       seo: mergeSection(defaultContent.seo, sectionMap.get("seo")),
       marquee: Array.isArray(sectionMap.get("marquee"))
         ? (sectionMap.get("marquee") as string[])

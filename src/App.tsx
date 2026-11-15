@@ -1077,11 +1077,15 @@ export default function App() {
         <div className="final-cta-main">
           <span className="eyebrow">Есть идея для проекта?</span>
           <h2>
+            {/* Always three short lines — nowrap CSS breaks a single long phrase */}
+            <CharReveal text="Ваш следующий" className="cta-line" stagger={28} />
             <CharReveal
-              text={content.contacts.ctaTitle}
+              text="проект начинается"
               className="cta-line"
+              delay={360}
               stagger={28}
             />
+            <CharReveal text="здесь" as="i" delay={820} stagger={36} />
           </h2>
           <div className="final-cta-group">
             <p>{content.contacts.ctaText}</p>

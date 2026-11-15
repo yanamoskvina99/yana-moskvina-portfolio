@@ -6,6 +6,7 @@ import {
 } from "../../content/api"
 import { defaultContent } from "../../content/defaults"
 import type { LeafletDetail } from "../../content/types"
+import { ImageField } from "../ImageField"
 import { Field, PageHeader, PointsEditor, useToast } from "../ui"
 
 type Row = {
@@ -19,6 +20,58 @@ type Row = {
 
 function emptyLeaflet(): LeafletDetail {
   return { eyebrow: "", title: "", intro: "", points: [], note: "" }
+}
+
+function GalleryField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string[]
+  onChange: (next: string[]) => void
+}) {
+  return (
+    <div className="adm-card" style={{ marginTop: 8 }}>
+      <h2>{label}</h2>
+      <p style={{ fontSize: 12, color: "#6b625c", marginTop: 0 }}>
+        URL по одному в строке или загрузите файлы по очереди ниже.
+      </p>
+      <Field
+        label="Список URL"
+        multiline
+        value={value.join("\n")}
+        onChange={(raw) =>
+          onChange(
+            raw
+              .split("\n")
+              .map((s) => s.trim())
+              .filter(Boolean),
+          )
+        }
+      />
+      {value.map((url, i) => (
+        <ImageField
+          key={`${url}-${i}`}
+          label={`Кадр ${i + 1}`}
+          value={url}
+          onChange={(next) => {
+            const copy = [...value]
+            if (!next) copy.splice(i, 1)
+            else copy[i] = next
+            onChange(copy)
+          }}
+        />
+      ))}
+      <ImageField
+        label="Добавить кадр"
+        value=""
+        onChange={(url) => {
+          if (url) onChange([...value, url])
+        }}
+      />
+    </div>
+  )
 }
 
 export function ServicesAdminPage() {
@@ -72,9 +125,9 @@ export function ServicesAdminPage() {
             value={String(payload.fit ?? "")}
             onChange={(v) => setPayload({ ...payload, fit: v })}
           />
-          <Field
-            label="URL изображения"
-            multiline
+          <ImageField
+            label="Превью услуги"
+            hint="Замените картинку: загрузите файл или вставьте URL"
             value={String(payload.imageUrl ?? "")}
             onChange={(v) => setPayload({ ...payload, imageUrl: v })}
           />
@@ -147,11 +200,20 @@ export function PortfolioAdminPage() {
             value={String(payload.visual ?? "")}
             onChange={(v) => setPayload({ ...payload, visual: v })}
           />
-          <Field
-            label="Обложка URL"
-            multiline
+          <ImageField
+            label="Обложка кейса"
+            hint="Главная картинка в портфолио"
             value={String(payload.imageUrl ?? "")}
             onChange={(v) => setPayload({ ...payload, imageUrl: v })}
+          />
+          <GalleryField
+            label="Галерея (доп. кадры)"
+            value={
+              Array.isArray(payload.gallery)
+                ? (payload.gallery as string[])
+                : []
+            }
+            onChange={(gallery) => setPayload({ ...payload, gallery })}
           />
           <Field
             label="Ссылка на проект"

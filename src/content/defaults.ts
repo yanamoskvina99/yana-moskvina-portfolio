@@ -400,7 +400,9 @@ export const defaultContent: SiteContent = {
     instagramUrl: "https://www.instagram.com/elfiaannka/",
     maxUrl:
       "https://max.ru/u/f9LHodD0cOJc1XjY6e_iWtirE3b_NsmNwEy8XSkJaU2FLf0Z5PYJNrfUfvY",
-    ctaTitle: "Ваш следующий проект начинается здесь",
+    ctaLine1: "Ваш следующий",
+    ctaLine2: "проект начинается",
+    ctaLine3: "здесь",
     ctaText:
       "Расскажите, что хочется создать. Начнём с живого разговора — без сложных анкет и готовых решений.",
     ctaButton: "Обсудить проект",
@@ -420,6 +422,8 @@ export const defaultContent: SiteContent = {
     twitterDescription:
       "Разработка современных сайтов для бизнеса, экспертов и личных брендов по всей России.",
     twitterImage: "https://ym-designer.ru/og.jpg",
+    faviconUrl: "/favicon.svg",
+    appleTouchIconUrl: "/apple-touch-icon.png",
   },
   marquee: [
     "Веб-дизайн",
