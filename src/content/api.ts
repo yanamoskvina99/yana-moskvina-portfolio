@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from "../lib/supabase"
-import { defaultContent } from "./defaults"
+import { bundledAssetBySourcePath, defaultContent } from "./defaults"
 import type {
   ContactsContent,
   FaqItem,
@@ -51,6 +51,95 @@ function mergeSection<T extends object>(base: T, patch: unknown): T {
   const p = asRecord(patch)
   if (!Object.keys(p).length) return base
   return { ...base, ...p } as T
+}
+
+/** Vite-dev / localhost URLs saved into CMS during local seed. */
+function isBrokenAssetUrl(url: string): boolean {
+  return (
+    url.includes("/src/assets/") ||
+    url.startsWith("http://127.0.0.1") ||
+    url.startsWith("http://localhost") ||
+    url.startsWith("blob:")
+  )
+}
+
+function sourcePathFromDevUrl(url: string): string | null {
+  const marker = "/src/assets/"
+  const idx = url.indexOf(marker)
+  if (idx >= 0) return decodeURIComponent(url.slice(idx + marker.length))
+  try {
+    const path = new URL(url, "https://ym-designer.ru").pathname
+    if (path.includes("/src/assets/")) {
+      return decodeURIComponent(path.split("/src/assets/")[1] || "")
+    }
+  } catch {
+    /* ignore */
+  }
+  return null
+}
+
+function resolveAssetUrl(url: string, fallback?: string): string {
+  if (!url) return fallback || url
+  if (!isBrokenAssetUrl(url)) return url
+  const sourcePath = sourcePathFromDevUrl(url)
+  if (sourcePath && bundledAssetBySourcePath[sourcePath]) {
+    return bundledAssetBySourcePath[sourcePath]
+  }
+  return fallback || url
+}
+
+function rewriteBrokenAssetUrls<T>(value: T, fallback?: T): T {
+  if (typeof value === "string") {
+    return resolveAssetUrl(
+      value,
+      typeof fallback === "string" ? fallback : undefined,
+    ) as T
+  }
+  if (Array.isArray(value)) {
+    const fb = Array.isArray(fallback) ? fallback : []
+    return value.map((item, i) => rewriteBrokenAssetUrls(item, fb[i])) as T
+  }
+  if (value && typeof value === "object") {
+    const fb = fallback && typeof fallback === "object" ? (fallback as Record<string, unknown>) : {}
+    const out: Record<string, unknown> = {}
+    for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = rewriteBrokenAssetUrls(item, fb[key])
+    }
+    return out as T
+  }
+  return value
+}
+
+function findDefaultProject(project: ProjectItem, index: number): ProjectItem | undefined {
+  return (
+    defaultContent.projects.find(
+      (item) => item.title === project.title || item.visual === project.visual,
+    ) || defaultContent.projects[index]
+  )
+}
+
+function findDefaultService(service: ServiceItem, index: number): ServiceItem | undefined {
+  return (
+    defaultContent.services.find(
+      (item) => item.title === service.title || item.visual === service.visual,
+    ) || defaultContent.services[index]
+  )
+}
+
+/** Replace localhost / Vite-dev image paths from CMS with production hashed assets. */
+export function sanitizeContentAssets(content: SiteContent): SiteContent {
+  const rewritten = rewriteBrokenAssetUrls(content, defaultContent)
+  return {
+    ...rewritten,
+    projects: rewritten.projects.map((project, index) => {
+      const fallback = findDefaultProject(project, index)
+      return rewriteBrokenAssetUrls(project, fallback)
+    }),
+    services: rewritten.services.map((service, index) => {
+      const fallback = findDefaultService(service, index)
+      return rewriteBrokenAssetUrls(service, fallback)
+    }),
+  }
 }
 
 export async function fetchPublishedContent(): Promise<SiteContent> {
@@ -163,7 +252,7 @@ export async function fetchPublishedContent(): Promise<SiteContent> {
           : defaultContent.faqs,
     }
 
-    return content
+    return sanitizeContentAssets(content)
   } catch (err) {
     console.warn("CMS fetch failed, using defaults", err)
     return defaultContent

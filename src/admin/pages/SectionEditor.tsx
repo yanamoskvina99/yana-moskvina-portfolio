@@ -347,7 +347,7 @@ export function SeoPage() {
           key: "faviconUrl",
           label: "Favicon",
           image: true,
-          hint: "SVG или PNG. После публикации обновите вкладку (Cmd+Shift+R).",
+          hint: "SVG или PNG. Нужна кнопка «Опубликовать». Потом жёсткое обновление вкладки сайта (Cmd+Shift+R) — браузер сильно кэширует favicon.",
         },
         {
           key: "appleTouchIconUrl",

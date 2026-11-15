@@ -17,6 +17,27 @@ import serviceLanding from "../assets/services/landing.jpg"
 import servicePages from "../assets/services/pages.jpg"
 import type { SiteContent } from "./types"
 
+/** Source path under src/assets → production hashed URL (for CMS cleanup). */
+export const bundledAssetBySourcePath: Record<string, string> = {
+  "yana-flowers.jpg": yanaFlowers,
+  "yana-editorial.jpg": yanaEditorial,
+  "yana-bw.jpg": yanaBw,
+  "idel/mockup.png": idelMockup,
+  "marketplace/preview.png": marketplacePreview,
+  "marketplace/home.png": marketplaceHome,
+  "marketplace/ads.png": marketplaceAds,
+  "marketplace/moderation.png": marketplaceModeration,
+  "marketplace/mobile-home.png": marketplaceMobileHome,
+  "marketplace/mobile-ads.png": marketplaceMobileAds,
+  "marketplace/mobile-filters.png": marketplaceMobileFilters,
+  "marketplace/mobile-profile.png": marketplaceMobileProfile,
+  "astera/preview.png": asteraPreview,
+  "astera/detail.png": asteraDetail,
+  "services/visiting.png": serviceVisiting,
+  "services/landing.jpg": serviceLanding,
+  "services/pages.jpg": servicePages,
+}
+
 export const defaultContent: SiteContent = {
   hero: {
     line1: "Цифровые",
@@ -422,8 +443,8 @@ export const defaultContent: SiteContent = {
     twitterDescription:
       "Разработка современных сайтов для бизнеса, экспертов и личных брендов по всей России.",
     twitterImage: "https://ym-designer.ru/og.jpg",
-    faviconUrl: "/favicon.svg",
-    appleTouchIconUrl: "/apple-touch-icon.png",
+    faviconUrl: "/favicon.png?v=ym-wine-1",
+    appleTouchIconUrl: "/apple-touch-icon.png?v=ym-wine-1",
   },
   marquee: [
     "Веб-дизайн",
