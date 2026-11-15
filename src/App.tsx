@@ -207,6 +207,7 @@ export default function App() {
   const [toTopLift, setToTopLift] = useState(22)
   const priceSectionRef = useRef<HTMLElement>(null)
   const footerTopRef = useRef<HTMLAnchorElement>(null)
+  const toTopRef = useRef<HTMLAnchorElement>(null)
   const closeTimerRef = useRef<number | null>(null)
   const briefNameRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLElement | null>(null)
@@ -385,14 +386,33 @@ export default function App() {
         setToTopOpacity(0)
         return
       }
-      const rect = footerLink.getBoundingClientRect()
-      const fadeStart = viewH + 24
-      const fadeEnd = viewH - 56
-      let next = 1
-      if (rect.top <= fadeEnd) next = 0
-      else if (rect.top < fadeStart) {
-        next = (rect.top - fadeEnd) / (fadeStart - fadeEnd)
+
+      const footerRect = footerLink.getBoundingClientRect()
+      const distFromEnd = Math.max(
+        0,
+        document.documentElement.scrollHeight - (window.scrollY + viewH),
+      )
+
+      // Hide against the footer's screen position so no faded twin remains.
+      const floatingTop = viewH - toTopLift - 16
+      const verticalGap = footerRect.top - floatingTop
+      if (verticalGap < 72 || distFromEnd < 72) {
+        setToTopOpacity(0)
+        return
       }
+
+      const hideLine = floatingTop + 72
+      const fadeStart = hideLine + 200
+      let next = 1
+      if (footerRect.top <= hideLine) next = 0
+      else if (footerRect.top < fadeStart) {
+        next = (footerRect.top - hideLine) / (fadeStart - hideLine)
+      }
+
+      const endFade = 240
+      const byEnd = distFromEnd >= endFade ? 1 : distFromEnd / endFade
+      next = Math.min(next, byEnd)
+      if (next < 0.22) next = 0
       setToTopOpacity(Math.max(0, Math.min(1, next)))
     }
 
@@ -1195,9 +1215,8 @@ export default function App() {
             href="#top"
             ref={footerTopRef}
             className="footer-top-link"
-            style={{ opacity: 1 - toTopOpacity }}
-            tabIndex={toTopOpacity > 0.5 ? -1 : 0}
-            aria-hidden={toTopOpacity > 0.5}
+            tabIndex={toTopOpacity > 0.2 ? -1 : 0}
+            aria-hidden={toTopOpacity > 0.2}
             onClick={scrollToTop}
           >
             Наверх <Arrow />
@@ -1708,7 +1727,8 @@ export default function App() {
       )}
       <a
         href="#top"
-        className="to-top"
+        ref={toTopRef}
+        className={`to-top${toTopOpacity < 0.05 ? " is-gone" : ""}`}
         data-on-surface={toTopSurface}
         style={
           {

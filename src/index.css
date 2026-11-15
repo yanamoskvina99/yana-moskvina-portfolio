@@ -1177,7 +1177,15 @@ section[id] { scroll-margin-top: 28px; }
   text-transform: uppercase;
   text-decoration: none;
   opacity: var(--to-top-opacity);
-  transition: opacity .35s ease, color .45s ease;
+  visibility: visible;
+  transition: opacity .28s ease, color .45s ease;
+}
+.to-top.is-gone,
+.to-top.is-gone:hover {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
 }
 .to-top[data-on-surface="dark"] { color: var(--ivory); }
 .to-top svg {
