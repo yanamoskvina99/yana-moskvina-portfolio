@@ -1,8 +1,12 @@
 export type LeafletDetail = {
   eyebrow: string
   title: string
+  price?: string
   intro: string
+  pointsHeading?: string
   points: string[]
+  afterHeading?: string
+  afterText?: string
   note?: string
 }
 
@@ -62,11 +66,15 @@ export type ProjectItem = {
   url?: string
   imageUrl?: string
   label?: string
+  /** Modal eyebrow override, e.g. "Визуальная концепция / Глэмпинг" */
+  eyebrow?: string
   features?: string[]
   gallery?: string[]
   galleryDesktop?: string[]
   galleryDesktopCaptions?: (string | undefined)[]
   galleryMobile?: string[]
+  /** Modal footer note for concept projects */
+  note?: string
   task?: string
   solution?: string
   result?: string
@@ -91,6 +99,8 @@ export type StepItem = {
   n: string
   title: string
   description: string
+  /** Quieter footnote under the step description */
+  note?: string
   imageUrl?: string
   sortOrder: number
   isPublished: boolean

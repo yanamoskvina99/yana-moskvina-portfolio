@@ -52,9 +52,9 @@ function CharReveal({
       aria-label={text}
     >
       <span className="char-reveal-visual" aria-hidden="true">
-        {text.split(/(\s+)/).map((chunk, chunkIndex) => {
+        {text.split(/([ \t\r\n]+)/).map((chunk, chunkIndex) => {
           if (chunk === "") return null
-          if (/^\s+$/.test(chunk)) {
+          if (/^[ \t\r\n]+$/.test(chunk)) {
             return Array.from(chunk).map((char, spaceIndex) => {
               const index = charIndex++
               return (
@@ -693,23 +693,31 @@ export default function App() {
       <section className="hero" id="top" data-surface="dark">
         <div className="hero-copy">
           <h1>
-            <CharReveal text={content.hero.line1} mode="auto" delay={60} stagger={34} />
-            <br />
-            <CharReveal
-              text={content.hero.line2}
-              mode="auto"
-              delay={320}
-              stagger={32}
-            />
-            <br />
-            <CharReveal
-              text={content.hero.line3}
-              as="i"
-              className="hero-line-italic"
-              mode="auto"
-              delay={720}
-              stagger={36}
-            />
+            {content.hero.line1 ? (
+              <CharReveal text={content.hero.line1} mode="auto" delay={60} stagger={34} />
+            ) : null}
+            {content.hero.line1 && content.hero.line2 ? <br /> : null}
+            {content.hero.line2 ? (
+              <CharReveal
+                text={content.hero.line2}
+                mode="auto"
+                delay={320}
+                stagger={32}
+              />
+            ) : null}
+            {(content.hero.line1 || content.hero.line2) && content.hero.line3 ? (
+              <br />
+            ) : null}
+            {content.hero.line3 ? (
+              <CharReveal
+                text={content.hero.line3}
+                as="i"
+                className="hero-line-italic"
+                mode="auto"
+                delay={content.hero.line2 ? 720 : 420}
+                stagger={36}
+              />
+            ) : null}
           </h1>
           <p className="hero-reveal" style={{ "--d": "380ms" } as CSSProperties}>
             {content.hero.description}
@@ -773,11 +781,31 @@ export default function App() {
               className="about-title-line"
               stagger={30}
             />
-            <br />
-            <span className="about-title-line">
-              <CharReveal text={content.about.titleLine2a} delay={280} stagger={30} />
-              <CharReveal text={content.about.titleLine2b} as="i" delay={420} stagger={34} />
-            </span>
+            {(content.about.titleLine2a || content.about.titleLine2b) ? (
+              <>
+                <br />
+                <span className="about-title-line">
+                  {content.about.titleLine2a ? (
+                    <CharReveal
+                      text={content.about.titleLine2a}
+                      delay={280}
+                      stagger={30}
+                    />
+                  ) : null}
+                  {content.about.titleLine2b ? (
+                    <>
+                      {content.about.titleLine2a ? "\u00A0" : null}
+                      <CharReveal
+                        text={content.about.titleLine2b}
+                        as="i"
+                        delay={content.about.titleLine2a ? 420 : 280}
+                        stagger={34}
+                      />
+                    </>
+                  ) : null}
+                </span>
+              </>
+            ) : null}
           </h2>
         </div>
         <figure className="about-main-photo" data-reveal>
@@ -1009,7 +1037,9 @@ export default function App() {
 
       <section className="process section-pad" data-surface="dark">
         <div className="process-intro">
-          <span className="eyebrow">Процесс / 01—05</span>
+          <span className="eyebrow">
+            Процесс / 01—{String(steps.length).padStart(2, "0")}
+          </span>
           <h2>
             <CharReveal
               text="От идеи до"
@@ -1077,15 +1107,25 @@ export default function App() {
         <div className="final-cta-main">
           <span className="eyebrow">Есть идея для проекта?</span>
           <h2>
-            {/* Always three short lines — nowrap CSS breaks a single long phrase */}
-            <CharReveal text="Ваш следующий" className="cta-line" stagger={28} />
             <CharReveal
-              text="проект начинается"
+              text={content.contacts.ctaLine1}
               className="cta-line"
-              delay={360}
               stagger={28}
             />
-            <CharReveal text="здесь" as="i" delay={820} stagger={36} />
+            {content.contacts.ctaLine2 ? (
+              <CharReveal
+                text={content.contacts.ctaLine2}
+                className="cta-line"
+                delay={360}
+                stagger={28}
+              />
+            ) : null}
+            <CharReveal
+              text={content.contacts.ctaLine3}
+              as="i"
+              delay={content.contacts.ctaLine2 ? 820 : 360}
+              stagger={36}
+            />
           </h2>
           <div className="final-cta-group">
             <p>{content.contacts.ctaText}</p>
@@ -1189,11 +1229,15 @@ export default function App() {
               </button>
               <ProjectVisual project={project} decorative={false} />
               <span className="eyebrow">
-                {project.category} /{" "}
-                {project.live ? "Живой проект" : "Авторский концепт"}
+                {project.eyebrow ||
+                  `${project.category} / ${
+                    project.live ? "Живой проект" : "Авторский концепт"
+                  }`}
               </span>
               <h2 id="project-title">{project.title}</h2>
-              <p>{project.description}</p>
+              {project.description.split(/\n\n+/).map((paragraph) => (
+                <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+              ))}
               <dl>
                 <div>
                   <dt>Ниша</dt>
@@ -1226,12 +1270,14 @@ export default function App() {
                           const caption = project.galleryDesktopCaptions?.[index]
                           return (
                             <figure key={`${project.title}-desktop-${index}`}>
+                              {caption ? (
+                                <figcaption>{caption}</figcaption>
+                              ) : null}
                               <img
                                 src={shot}
                                 alt={caption || ""}
                                 loading="lazy"
                               />
-                              {caption ? <figcaption>{caption}</figcaption> : null}
                             </figure>
                           )
                         })}
@@ -1282,8 +1328,8 @@ export default function App() {
                 </a>
               ) : (
                 <p className="modal-note">
-                  Представлены только доступные материалы авторской концепции.
-                  Это не коммерческий клиентский проект.
+                  {project.note ||
+                    "Представлены только доступные материалы авторской концепции. Это не коммерческий клиентский проект."}
                 </p>
               )}
             </section>
@@ -1307,12 +1353,22 @@ export default function App() {
               <div className="leaflet-paper">
                 <span className="eyebrow">{leaflet.eyebrow}</span>
                 <h2 id="leaflet-title">{leaflet.title}</h2>
+                {leaflet.price ? (
+                  <p className="leaflet-price-tag">{leaflet.price}</p>
+                ) : null}
                 <p>{leaflet.intro}</p>
+                {leaflet.pointsHeading ? (
+                  <p className="leaflet-subhead">{leaflet.pointsHeading}</p>
+                ) : null}
                 <ul>
                   {leaflet.points.map((point) => (
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
+                {leaflet.afterHeading ? (
+                  <p className="leaflet-subhead">{leaflet.afterHeading}</p>
+                ) : null}
+                {leaflet.afterText ? <p>{leaflet.afterText}</p> : null}
                 {leaflet.note && <p className="leaflet-note">{leaflet.note}</p>}
                 <button
                   type="button"

@@ -306,6 +306,7 @@ export function StepsAdminPage() {
         n: "01",
         title: "Новый этап",
         description: "",
+        note: "",
         imageUrl: "",
       })}
       seed={defaultContent.steps.map((s) => {
@@ -329,6 +330,12 @@ export function StepsAdminPage() {
             multiline
             value={String(payload.description ?? "")}
             onChange={(v) => setPayload({ ...payload, description: v })}
+          />
+          <Field
+            label="Примечание"
+            multiline
+            value={String(payload.note ?? "")}
+            onChange={(v) => setPayload({ ...payload, note: v })}
           />
           <Field
             label="URL иконки/изображения"
@@ -362,14 +369,35 @@ function LeafletFields({
         onChange={(title) => onChange({ ...value, title })}
       />
       <Field
+        label="Цена в окне"
+        value={value.price || ""}
+        onChange={(price) => onChange({ ...value, price })}
+      />
+      <Field
         label="Вступление"
         multiline
         value={value.intro}
         onChange={(intro) => onChange({ ...value, intro })}
       />
+      <Field
+        label="Подзаголовок списка"
+        value={value.pointsHeading || ""}
+        onChange={(pointsHeading) => onChange({ ...value, pointsHeading })}
+      />
       <PointsEditor
         points={value.points || []}
         onChange={(points) => onChange({ ...value, points })}
+      />
+      <Field
+        label="Подзаголовок после списка"
+        value={value.afterHeading || ""}
+        onChange={(afterHeading) => onChange({ ...value, afterHeading })}
+      />
+      <Field
+        label="Текст после списка"
+        multiline
+        value={value.afterText || ""}
+        onChange={(afterText) => onChange({ ...value, afterText })}
       />
       <Field
         label="Примечание"

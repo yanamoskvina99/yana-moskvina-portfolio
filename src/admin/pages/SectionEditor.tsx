@@ -229,8 +229,12 @@ export function HomePage() {
       defaults={{ ...d }}
       fields={[
         { key: "line1", label: "H1 — строка 1" },
-        { key: "line2", label: "H1 — строка 2" },
-        { key: "line3", label: "H1 — строка 3 (курсив)" },
+        {
+          key: "line2",
+          label: "H1 — строка 2 (необязательно)",
+          hint: "Можно оставить пустой — тогда курсив сразу под первой строкой",
+        },
+        { key: "line3", label: "H1 — акцентная строка (курсив)" },
         { key: "description", label: "Описание", multiline: true },
         { key: "formats", label: "Подпись форматов" },
         { key: "ctaLabel", label: "Текст кнопки" },

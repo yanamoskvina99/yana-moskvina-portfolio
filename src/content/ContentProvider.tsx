@@ -7,17 +7,35 @@ import {
 } from "react"
 import {
   fetchPublishedContent,
+  normalizeAbout,
   normalizeContacts,
+  normalizeHero,
+  normalizeFaqs,
+  normalizePortfolioIntro,
+  normalizePrices,
+  normalizeProjects,
+  normalizeServices,
+  normalizeServicesIntro,
+  normalizeSteps,
   sanitizeContentAssets,
 } from "./api"
 import { defaultContent } from "./defaults"
 import type { SiteContent } from "./types"
 
-const CACHE_KEY = "ym-published-content-v2"
+const CACHE_KEY = "ym-published-content-v14"
 
-function withNormalizedContacts(content: SiteContent): SiteContent {
+function withNormalizedContent(content: SiteContent): SiteContent {
   return {
     ...content,
+    hero: normalizeHero(content.hero),
+    about: normalizeAbout(content.about),
+    servicesIntro: normalizeServicesIntro(content.servicesIntro),
+    services: normalizeServices(content.services),
+    portfolioIntro: normalizePortfolioIntro(content.portfolioIntro),
+    projects: normalizeProjects(content.projects),
+    steps: normalizeSteps(content.steps),
+    faqs: normalizeFaqs(content.faqs),
+    prices: normalizePrices(content.prices),
     contacts: normalizeContacts(content.contacts),
   }
 }
@@ -42,7 +60,7 @@ function readCachedContent(): SiteContent | null {
       content?: SiteContent
     }
     if (!parsed?.content || parsed.fingerprint !== assetFingerprint()) return null
-    return sanitizeContentAssets(withNormalizedContacts(parsed.content))
+    return sanitizeContentAssets(withNormalizedContent(parsed.content))
   } catch {
     return null
   }
@@ -77,7 +95,7 @@ const ContentContext = createContext<Ctx>({
 export function ContentProvider({ children }: { children: ReactNode }) {
   const cached = readCachedContent()
   const [content, setContent] = useState<SiteContent>(
-    () => cached ?? withNormalizedContacts(defaultContent),
+    () => cached ?? withNormalizedContent(defaultContent),
   )
   const [loading, setLoading] = useState(true)
   const [ready, setReady] = useState(Boolean(cached))
@@ -85,7 +103,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   const refresh = async () => {
     setLoading(true)
     try {
-      const next = withNormalizedContacts(await fetchPublishedContent())
+      const next = withNormalizedContent(await fetchPublishedContent())
       setContent(next)
       writeCachedContent(next)
     } finally {

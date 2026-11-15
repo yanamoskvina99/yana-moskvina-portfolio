@@ -1,8 +1,11 @@
 import { supabase, isSupabaseConfigured } from "../lib/supabase"
 import { bundledAssetBySourcePath, defaultContent } from "./defaults"
 import type {
+  AboutContent,
   ContactsContent,
   FaqItem,
+  HeroContent,
+  PortfolioIntro,
   PriceItem,
   ProjectItem,
   SectionKey,
@@ -17,7 +20,128 @@ function asRecord(v: unknown): Record<string, unknown> {
     : {}
 }
 
-/** CTA must stay 3 short lines — old CMS saves put the whole phrase in one field. */
+/** Replace legacy hero copy so CMS seed does not keep the old headline. */
+export function normalizeHero(raw: unknown): HeroContent {
+  const base = defaultContent.hero
+  const merged = { ...base, ...asRecord(raw) } as HeroContent
+  const legacy =
+    /цифровые/i.test(merged.line1) ||
+    /пространства/i.test(merged.line2) ||
+    /с характером/i.test(merged.line3) ||
+    /внешний вид не спорит/i.test(merged.description) ||
+    /эстетика\s*\/\s*структура/i.test(merged.manifesto) ||
+    (/у каждого/i.test(merged.line1) &&
+      /проекта/i.test(merged.line1) &&
+      !/^\s*проекта/i.test(String(merged.line2 || "")))
+
+  if (!legacy) return merged
+  return {
+    ...merged,
+    line1: base.line1,
+    line2: base.line2,
+    line3: base.line3,
+    description: base.description,
+    manifesto: base.manifesto,
+  }
+}
+
+/** Replace legacy service copy so CMS seed does not keep old service texts. */
+export function normalizeServices(items: ServiceItem[]): ServiceItem[] {
+  if (!items.length) return defaultContent.services
+  return items.map((item, index) => {
+    const fallback =
+      defaultContent.services.find(
+        (service) =>
+          service.visual === item.visual || service.title === item.title,
+      ) || defaultContent.services[index]
+    if (!fallback) return item
+    const legacy =
+      /собирает услуги, контакты/i.test(item.text) ||
+      /одностраничный сайт с последовательным сценарием/i.test(item.text) ||
+      /сайт из нескольких разделов: направления/i.test(item.text) ||
+      /всё важное — в одном месте/i.test(item.detail?.title || "") ||
+      /одна история — один точный/i.test(item.detail?.title || "") ||
+      /несколько разделов — одна система/i.test(item.detail?.title || "")
+    if (!legacy) return item
+    return {
+      ...item,
+      title: fallback.title,
+      text: fallback.text,
+      fit: fallback.fit,
+      detail: fallback.detail,
+    }
+  })
+}
+
+/** Replace legacy price-list copy from older CMS seeds. */
+export function normalizePrices(items: PriceItem[]): PriceItem[] {
+  if (!items.length) return defaultContent.prices
+  return items.map((item, index) => {
+    const fallback =
+      defaultContent.prices.find((price) => price.id === item.id) ||
+      defaultContent.prices.find((price) => price.title === item.title) ||
+      defaultContent.prices[index]
+    if (!fallback) return item
+    const legacy =
+      /сайт без админ-панели/i.test(item.title) ||
+      /сайт с админ-панелью/i.test(item.title) ||
+      (/метрик/i.test(item.title) && /от 10 000/i.test(item.price)) ||
+      /индивидуальный сайт, готовый к публикации/i.test(item.detail?.intro || "") ||
+      /персональная защищённая панель/i.test(item.detail?.intro || "") ||
+      /корректная техническая настройка аналитики/i.test(item.detail?.intro || "")
+    if (!legacy) return item
+    return {
+      ...item,
+      title: fallback.title,
+      price: fallback.price,
+      detail: fallback.detail,
+    }
+  })
+}
+
+export function normalizeServicesIntro(
+  raw: unknown,
+): SiteContent["servicesIntro"] {
+  const base = defaultContent.servicesIntro
+  const merged = { ...base, ...asRecord(raw) } as SiteContent["servicesIntro"]
+  if (/три формата под разные задачи/i.test(merged.description)) {
+    return { ...merged, description: base.description }
+  }
+  return merged
+}
+
+/** Replace legacy about copy so CMS seed does not keep the old bio. */
+export function normalizeAbout(raw: unknown): AboutContent {
+  const base = defaultContent.about
+  const merged = { ...base, ...asRecord(raw) } as AboutContent
+  const line1 = String(merged.titleLine1 || "").trim()
+  const legacy =
+    /^за дизайном$/i.test(line1) ||
+    /^за дизайном\s+стоит$/i.test(line1) ||
+    (!String(merged.titleLine2a || "").trim() &&
+      /^за дизайном/i.test(line1) &&
+      /человек/i.test(String(merged.titleLine2b || ""))) ||
+    /красота привлекает внимание/i.test(merged.quote) ||
+    /москвина яна, веб-дизайнер/i.test(merged.body1) ||
+    /ai-инструменты/i.test(merged.body2) ||
+    /^эстетика$/im.test(merged.asideNote)
+
+  if (!legacy) return merged
+  return {
+    ...merged,
+    titleLine1: base.titleLine1,
+    titleLine2a: base.titleLine2a,
+    titleLine2b: base.titleLine2b,
+    quote: base.quote,
+    body1: base.body1,
+    body2: base.body2,
+    asideNote: base.asideNote,
+    captionName: base.captionName,
+    captionRole: base.captionRole,
+  }
+}
+
+/** Keep final CTA copy in sync; allow empty middle line for 2-line headlines. */
 export function normalizeContacts(raw: unknown): ContactsContent {
   const base = defaultContent.contacts
   const p = asRecord(raw)
@@ -25,11 +149,18 @@ export function normalizeContacts(raw: unknown): ContactsContent {
   const line1 = String(merged.ctaLine1 || "")
   const line2 = String(merged.ctaLine2 || "")
   const line3 = String(merged.ctaLine3 || "")
-  const legacy = String(merged.ctaTitle || "")
+  const text = String(merged.ctaText || "")
+  const button = String(merged.ctaButton || "")
+  const legacyTitle = String(merged.ctaTitle || "")
   const broken =
-    Boolean(legacy) ||
-    line1.split(/\s+/).filter(Boolean).length > 3 ||
-    /проект|начинается|здесь/i.test(line1)
+    Boolean(legacyTitle) ||
+    line1.split(/\s+/).filter(Boolean).length > 4 ||
+    /ваш следующий|проект начинается|^здесь$/i.test(
+      `${line1} ${line2} ${line3}`.trim(),
+    ) ||
+    /начнём с живого разговора/i.test(text) ||
+    /^обсудить проект$/i.test(button) ||
+    !/давайте обсудим/i.test(line1)
 
   if (broken) {
     return {
@@ -37,12 +168,14 @@ export function normalizeContacts(raw: unknown): ContactsContent {
       ctaLine1: base.ctaLine1,
       ctaLine2: base.ctaLine2,
       ctaLine3: base.ctaLine3,
+      ctaText: base.ctaText,
+      ctaButton: base.ctaButton,
     }
   }
   return {
     ...merged,
     ctaLine1: line1 || base.ctaLine1,
-    ctaLine2: line2 || base.ctaLine2,
+    ctaLine2: line2,
     ctaLine3: line3 || base.ctaLine3,
   }
 }
@@ -51,6 +184,125 @@ function mergeSection<T extends object>(base: T, patch: unknown): T {
   const p = asRecord(patch)
   if (!Object.keys(p).length) return base
   return { ...base, ...p } as T
+}
+
+/** Keep portfolio intro copy in sync with the site brief. */
+export function normalizePortfolioIntro(raw: unknown): PortfolioIntro {
+  const base = defaultContent.portfolioIntro
+  const merged = { ...base, ...asRecord(raw) } as PortfolioIntro
+  const legacy =
+    /избранные работы/i.test(merged.eyebrow) ||
+    /запущенные сайты и концепты/i.test(merged.description) ||
+    !/собрала проекты/i.test(merged.description)
+
+  if (!legacy) return merged
+  return { ...merged, ...base }
+}
+
+/** Keep FAQ copy in sync with the site brief (incl. payment question). */
+export function normalizeFaqs(faqs: FaqItem[]): FaqItem[] {
+  const base = defaultContent.faqs
+  if (!faqs?.length) return base
+
+  const joined = faqs.map((faq) => `${faq.question} ${faq.answer}`).join("\n")
+  const legacy =
+    faqs.length < 10 ||
+    !/как происходит оплата/i.test(joined) ||
+    /срок зависит от формата|согласуем сроки индивидуально|достаточно понимания своей идеи|всё зависит от проекта и исходных|индивидуальную админ-панель|гарантийной поддержки после сдачи|подберём подходящий формат/i.test(
+      joined,
+    )
+
+  if (!legacy) return faqs
+
+  return base.map((item, index) => {
+    const existing =
+      faqs.find((faq) => faq.question === item.question) || faqs[index]
+    return {
+      ...item,
+      id: existing?.id || item.id,
+      isPublished: existing?.isPublished ?? item.isPublished,
+    }
+  })
+}
+
+/** Keep process steps in sync with the site brief (incl. 6th warranty step). */
+export function normalizeSteps(steps: StepItem[]): StepItem[] {
+  const base = defaultContent.steps
+  if (!steps?.length) return base
+
+  const joined = steps
+    .map((step) => `${step.title} ${step.description} ${step.note || ""}`)
+    .join("\n")
+  const legacy =
+    steps.length < 6 ||
+    !/гарантийный период/i.test(joined) ||
+    !/обсуждение проекта/i.test(joined) ||
+    /визуальная концепция|знакомство и обсуждение|сначала знакомимся|гарантия распространяется|ещё две недели остаюсь|обсуждение задачи|анализ и структура/i.test(
+      joined,
+    )
+
+  if (!legacy) return steps
+
+  return base.map((item, index) => {
+    const existing =
+      steps.find((step) => step.n === item.n) || steps[index]
+    return {
+      ...item,
+      id: existing?.id || item.id,
+      isPublished: existing?.isPublished ?? item.isPublished,
+    }
+  })
+}
+
+/** Refresh known project case copy while preserving media URLs from CMS. */
+export function normalizeProjects(projects: ProjectItem[]): ProjectItem[] {
+  if (!projects?.length) return defaultContent.projects
+  return projects.map((project, index) => {
+    const base = findDefaultProject(project, index)
+    if (!base) return project
+
+    const desc = String(project.description || "")
+    const legacy =
+      base.visual === "idel"
+        ? /атмосферная подача|сценарии отдыха/i.test(desc) ||
+          !/контур\.отель/i.test(desc) ||
+          !(project.features?.length)
+        : base.visual === "astera"
+          ? /авторский лендинг|толпарово|кук-таш/i.test(desc) ||
+            /фотографии территории/i.test((project.features || []).join(" ")) ||
+            !project.eyebrow
+          : base.visual === "marketplace"
+            ? /интернет-магазин/i.test(project.category) ||
+              /кабинеты продавца/i.test(desc) ||
+              !/avito/i.test(desc) ||
+              !(project.galleryDesktopCaptions?.[0])
+            : false
+
+    if (!legacy) return project
+
+    return {
+      ...project,
+      category: base.category,
+      niche: base.niche,
+      description: base.description,
+      label: base.label ?? project.label,
+      eyebrow: base.eyebrow,
+      features: base.features,
+      note: base.note,
+      live: base.live ?? project.live,
+      url: project.url || base.url,
+      galleryDesktopCaptions:
+        base.galleryDesktopCaptions ?? project.galleryDesktopCaptions,
+      gallery: project.gallery?.length ? project.gallery : base.gallery,
+      galleryDesktop: project.galleryDesktop?.length
+        ? project.galleryDesktop
+        : base.galleryDesktop,
+      galleryMobile: project.galleryMobile?.length
+        ? project.galleryMobile
+        : base.galleryMobile,
+      imageUrl: project.imageUrl || base.imageUrl,
+    }
+  })
 }
 
 /** Vite-dev / localhost URLs saved into CMS during local seed. */
@@ -189,15 +441,14 @@ export async function fetchPublishedContent(): Promise<SiteContent> {
 
     const content: SiteContent = {
       ...defaultContent,
-      hero: mergeSection(defaultContent.hero, sectionMap.get("hero")),
-      about: mergeSection(defaultContent.about, sectionMap.get("about")),
-      servicesIntro: mergeSection(
-        defaultContent.servicesIntro,
-        sectionMap.get("services_intro"),
-      ),
-      portfolioIntro: mergeSection(
-        defaultContent.portfolioIntro,
-        sectionMap.get("portfolio_intro"),
+      hero: normalizeHero(sectionMap.get("hero")),
+      about: normalizeAbout(sectionMap.get("about")),
+      servicesIntro: normalizeServicesIntro(sectionMap.get("services_intro")),
+      portfolioIntro: normalizePortfolioIntro(
+        mergeSection(
+          defaultContent.portfolioIntro,
+          sectionMap.get("portfolio_intro"),
+        ),
       ),
       contacts: normalizeContacts(sectionMap.get("contacts")),
       seo: mergeSection(defaultContent.seo, sectionMap.get("seo")),
@@ -206,14 +457,19 @@ export async function fetchPublishedContent(): Promise<SiteContent> {
         : defaultContent.marquee,
       services:
         (servicesRes.data ?? []).length > 0
-          ? (servicesRes.data ?? []).map((row) => ({
-              ...(row.payload as Omit<ServiceItem, "id" | "sortOrder" | "isPublished">),
-              id: row.id,
-              sortOrder: row.sort_order,
-              isPublished: row.is_published,
-            }))
+          ? normalizeServices(
+              (servicesRes.data ?? []).map((row) => ({
+                ...(row.payload as Omit<
+                  ServiceItem,
+                  "id" | "sortOrder" | "isPublished"
+                >),
+                id: row.id,
+                sortOrder: row.sort_order,
+                isPublished: row.is_published,
+              })),
+            )
           : defaultContent.services,
-      projects:
+      projects: normalizeProjects(
         (projectsRes.data ?? []).length > 0
           ? (projectsRes.data ?? []).map((row) => ({
               ...(row.payload as Omit<ProjectItem, "id" | "sortOrder" | "isPublished">),
@@ -222,16 +478,22 @@ export async function fetchPublishedContent(): Promise<SiteContent> {
               isPublished: row.is_published,
             }))
           : defaultContent.projects,
+      ),
       prices:
         (pricesRes.data ?? []).length > 0
-          ? (pricesRes.data ?? []).map((row) => ({
-              ...(row.payload as Omit<PriceItem, "id" | "sortOrder" | "isPublished">),
-              id: row.id,
-              sortOrder: row.sort_order,
-              isPublished: row.is_published,
-            }))
+          ? normalizePrices(
+              (pricesRes.data ?? []).map((row) => ({
+                ...(row.payload as Omit<
+                  PriceItem,
+                  "id" | "sortOrder" | "isPublished"
+                >),
+                id: row.id,
+                sortOrder: row.sort_order,
+                isPublished: row.is_published,
+              })),
+            )
           : defaultContent.prices,
-      steps:
+      steps: normalizeSteps(
         (stepsRes.data ?? []).length > 0
           ? (stepsRes.data ?? []).map((row) => ({
               ...(row.payload as Omit<StepItem, "id" | "sortOrder" | "isPublished">),
@@ -240,7 +502,8 @@ export async function fetchPublishedContent(): Promise<SiteContent> {
               isPublished: row.is_published,
             }))
           : defaultContent.steps,
-      faqs:
+      ),
+      faqs: normalizeFaqs(
         (faqRes.data ?? []).length > 0
           ? (faqRes.data ?? []).map((row) => ({
               id: row.id,
@@ -250,6 +513,7 @@ export async function fetchPublishedContent(): Promise<SiteContent> {
               isPublished: row.is_published,
             }))
           : defaultContent.faqs,
+      ),
     }
 
     return sanitizeContentAssets(content)
