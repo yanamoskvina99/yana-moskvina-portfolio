@@ -1,12 +1,24 @@
 {
-  "title": "Яна Москвина — веб-дизайнер",
-  "description": "Портфолио веб-дизайнера Яны Москвиной: сайты с характером для брендов, экспертов и бизнеса. Цифровые визитки, лендинги и многостраничные проекты.",
+  "title": "Яна Москвина — веб-дизайнер | Создание сайтов под ключ",
+  "description": "Яна Москвина — веб-дизайнер. Создаю сайты под ключ для бизнеса, экспертов и личных брендов по всей России. Индивидуальный дизайн, адаптивная разработка и запуск проекта.",
   "language": "ru",
   "robots": {
-    "index": false
+    "index": true
   },
   "icons": {
     "icon": "/favicon.svg"
+  },
+  "openGraph": {
+    "image": "https://ym-designer.ru/og.jpg"
+  },
+  "analytics": {
+    "googleAnalyticsId": ""
+  },
+  "customScripts": {
+    "headStart": "",
+    "headEnd": "",
+    "bodyStart": "",
+    "bodyEnd": ""
   },
   "accessibility": {
     "addBypassLinks": false,

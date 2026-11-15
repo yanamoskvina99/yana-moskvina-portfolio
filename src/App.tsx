@@ -7,317 +7,16 @@ import {
   useRef,
   useState,
 } from "react"
-import yanaFlowers from "./assets/yana-flowers.jpg"
-import yanaEditorial from "./assets/yana-editorial.jpg"
 import yanaPortrait from "./assets/yana-portrait.jpg"
-import yanaBw from "./assets/yana-bw.jpg"
-import idelMockup from "./assets/idel/mockup.png"
-import marketplacePreview from "./assets/marketplace/preview.png"
-import marketplaceHome from "./assets/marketplace/home.png"
-import marketplaceAds from "./assets/marketplace/ads.png"
-import marketplaceModeration from "./assets/marketplace/moderation.png"
-import marketplaceMobileHome from "./assets/marketplace/mobile-home.png"
-import marketplaceMobileAds from "./assets/marketplace/mobile-ads.png"
-import marketplaceMobileFilters from "./assets/marketplace/mobile-filters.png"
-import marketplaceMobileProfile from "./assets/marketplace/mobile-profile.png"
-import asteraPreview from "./assets/astera/preview.png"
-import asteraDetail from "./assets/astera/detail.png"
-import bug8earPreview from "./assets/bug8ear/preview.png"
-import bug8earDetail from "./assets/bug8ear/detail.png"
+import { useSiteContent } from "./content/ContentProvider"
+import type { LeafletDetail, ProjectItem } from "./content/types"
 
-type Leaflet = {
-  eyebrow: string
-  title: string
-  intro: string
-  points: string[]
-  note?: string
-}
+type Leaflet = LeafletDetail
+type Project = ProjectItem & { image?: string }
 
-type Project = {
-  category: string
-  title: string
-  niche: string
-  description: string
-  visual: string
-  live?: boolean
-  url?: string
-  image?: string
-  label?: string
-  features?: string[]
-  gallery?: string[]
-  galleryDesktop?: string[]
-  galleryDesktopCaptions?: (string | undefined)[]
-  galleryMobile?: string[]
-}
-
-const services = [
-  {
-    n: "01",
-    title: "Цифровая визитка",
-    text: "Мобильная страница, которая собирает услуги, контакты и важные ссылки в одном месте.",
-    fit: "нужна эстетичная визитка для соцсетей с услугами и удобной связью.",
-    visual: "visiting",
-    detail: {
-      eyebrow: "Услуги / Цифровая визитка",
-      title: "Всё важное — в одном месте",
-      intro:
-        "Индивидуальная страница для знакомства с вами, вашими услугами и возможностями сотрудничества.",
-      points: [
-        "Индивидуальная визуальная концепция",
-        "Персональное представление и информация о вас",
-        "Презентация услуг и стоимости",
-        "Фотографии и визуальные материалы",
-        "Ссылки на социальные сети и мессенджеры",
-        "Кнопки связи и заявки",
-        "Удобная мобильная навигация",
-      ],
-      note: "Одна ссылка вместо разрозненных контактов, сторис и сообщений.",
-    },
-  },
-  {
-    n: "02",
-    title: "Лендинг",
-    text: "Одностраничный сайт с последовательным сценарием: от первого впечатления до целевого действия.",
-    fit: "нужно презентовать продукт, услугу, событие или новый запуск.",
-    visual: "landing",
-    detail: {
-      eyebrow: "Услуги / Лендинг",
-      title: "Одна история — один точный маршрут",
-      intro:
-        "Лендинг показывает, в чём польза предложения, и ведёт к заявке, покупке или знакомству.",
-      points: [
-        "Анализ задачи и аудитории",
-        "Смысловая структура и прототип",
-        "Индивидуальный дизайн",
-        "Анимации, формы и адаптивная версия",
-      ],
-      note: "Хороший выбор для сфокусированного предложения, которому не нужна сложная многоуровневая навигация.",
-    },
-  },
-  {
-    n: "03",
-    title: "Многостраничный сайт",
-    text: "Сайт из нескольких разделов: направления, услуги и навигация между ними.",
-    fit: "бренду важно подробно рассказать о себе и выстроить удобную навигацию.",
-    visual: "pages",
-    detail: {
-      eyebrow: "Услуги / Многостраничный сайт",
-      title: "Несколько разделов — одна система",
-      intro:
-        "У каждого раздела своя задача, а оформление, тон и навигация остаются общими.",
-      points: [
-        "Анализ и карта разделов",
-        "Сценарии и логика переходов",
-        "Единая визуальная система",
-        "Адаптивные страницы и функциональность",
-      ],
-      note: "Подходит компаниям, студиям и брендам, которым нужен полноценный ресурс с потенциалом развития.",
-    },
-  },
-]
-
-const priceOffers: Array<{ title: string; price: string; detail: Leaflet }> = [
-  {
-    title: "Сайт без админ-панели",
-    price: "от 10 000 ₽",
-    detail: {
-      eyebrow: "Прайс / Разработка",
-      title: "Сайт без админ-панели",
-      intro:
-        "Индивидуальный сайт, готовый к публикации и работе с вашей аудиторией.",
-      points: [
-        "Индивидуальный дизайн и разработка",
-        "Мобильная адаптация",
-        "Анимации и интерактивные элементы",
-        "Формы обратной связи",
-        "Публикация сайта",
-      ],
-      note: "После передачи самостоятельное изменение контента без CMS может потребовать помощи разработчика.",
-    },
-  },
-  {
-    title: "Сайт с админ-панелью",
-    price: "от 30 000 ₽",
-    detail: {
-      eyebrow: "Прайс / Основное предложение",
-      title: "Сайт с админ-панелью",
-      intro:
-        "Сайт и персональная защищённая панель для самостоятельного обновления содержания.",
-      points: [
-        "Индивидуальный дизайн и разработка",
-        "Мобильная адаптация",
-        "Авторизация, защищённый доступ и база данных",
-        "Редактирование текстов, изображений, цен, услуг и карточек",
-        "Публикация сайта",
-      ],
-      note: "Панель меняет контент, но не визуальную концепцию, структуру, шрифты, фирменные цвета и общий дизайн.",
-    },
-  },
-  {
-    title: "Настройка Яндекс Метрики",
-    price: "от 10 000 ₽",
-    detail: {
-      eyebrow: "Прайс / Аналитика",
-      title: "Настройка Яндекс Метрики",
-      intro:
-        "Корректная техническая настройка аналитики для понимания действий посетителей.",
-      points: [
-        "Установка счётчика",
-        "Настройка целей и событий",
-        "Отслеживание форм и нажатий",
-        "Электронная коммерция при необходимости",
-        "Проверка корректности работы",
-      ],
-    },
-  },
-]
-
-const projects: Project[] = [
-  {
-    category: "Лендинг",
-    title: "Идель Баши",
-    niche: "Всесезонный кемпинг",
-    description:
-      "Сайт кемпинга у подножия Иремеля: атмосферная подача места, проживание, сценарии отдыха и понятный путь к бронированию.",
-    visual: "idel",
-    live: true,
-    url: "https://idel-bashi.ru/",
-    image: idelMockup,
-  },
-  {
-    category: "Лендинг",
-    title: "Астера",
-    niche: "Глэмпинг в Башкирии",
-    description:
-      "Авторский лендинг глэмпинга «Астера» в природном парке Зилим, рядом с деревней Толпарово. Поблизости река Зилим и горы Кук-Таш и Мамбет. Сайт показывает уединённый отдых среди леса и гор: тёмно-оливковая палитра, крупные пейзажи, асимметричная журнальная вёрстка, тонкие линии, топографические контуры и рукописные акценты.",
-    visual: "astera",
-    image: asteraPreview,
-    features: [
-      "Первый экран с атмосферным пейзажем и позиционированием глэмпинга",
-      "Знакомство с проектом и его философией",
-      "Фотографии территории и вариантов отдыха",
-      "Окружение и природные достопримечательности",
-      "Географическая карта с расположением глэмпинга",
-    ],
-    gallery: [asteraPreview, asteraDetail],
-  },
-  {
-    category: "Интернет-магазин",
-    title: "Маркетплейс",
-    niche: "Африканский marketplace",
-    description:
-      "Концепция маркетплейса для мусульманской аудитории: объявления, поиск товаров и услуг, кабинеты продавца и покупателя. Структура близка к привычному классифайду, оформление — к исламской эстетике: глубокий зелёный, золото, песочные оттенки, орнамент и архитектурные мотивы.",
-    visual: "marketplace",
-    image: marketplacePreview,
-    features: [
-      "Каталог товаров и объявлений по категориям",
-      "Поиск и фильтрация предложений",
-      "Карточки товаров с фотографиями и ценами",
-      "Личный кабинет пользователя",
-      "Размещение и управление объявлениями",
-      "Интерфейс модерации публикаций",
-    ],
-    galleryDesktop: [
-      marketplaceHome,
-      marketplaceAds,
-      marketplaceModeration,
-    ],
-    galleryDesktopCaptions: [
-      undefined,
-      "Личный кабинет пользователя",
-      "Панель модерации объявлений",
-    ],
-    galleryMobile: [
-      marketplaceMobileHome,
-      marketplaceMobileAds,
-      marketplaceMobileFilters,
-      marketplaceMobileProfile,
-    ],
-  },
-  {
-    category: "Лендинг",
-    title: "BUG8EAR",
-    niche: "Киберпанк-портфолио full-stack разработчика",
-    label: "Лендинг / Концепт",
-    description:
-      "Персональный сайт-портфолио full-stack разработчика Артёма — пространство, где характер автора читается с первого экрана. Визуальная концепция опирается на футуристичную эстетику киберпанка: глубокий тёмный фон, насыщенный красный, мягкое свечение акцентов и выразительная типографика. Вместе они складывают цельную цифровую идентичность — смелую, современную и запоминающуюся. Сайт ведёт от главной страницы к знакомству с разработчиком, обзору технологий, портфолио проектов и контактам, сохраняя единый визуальный ритм на всём пути.",
-    visual: "bug8ear",
-    image: bug8earPreview,
-    gallery: [bug8earPreview, bug8earDetail],
-  },
-]
-
-const steps = [
-  [
-    "01",
-    "Знакомство и обсуждение задачи",
-    "Обсуждаем идею, цели проекта, особенности бизнеса и пожелания.",
-  ],
-  [
-    "02",
-    "Анализ и структура",
-    "Вместе определяем разделы, содержание и логику пути пользователя.",
-  ],
-  [
-    "03",
-    "Визуальная концепция",
-    "Разрабатываю направление и согласовываю его с вами до следующих этапов.",
-  ],
-  [
-    "04",
-    "Дизайн и разработка",
-    "Создаю страницы, функциональность, анимации и адаптивную версию.",
-  ],
-  [
-    "05",
-    "Проверка и запуск",
-    "Тестирую элементы, публикую сайт и передаю готовый проект.",
-  ],
-]
-
-const CONTACT_EMAIL = "yana.moskwina.99@gmail.com"
 const WEB3FORMS_ACCESS_KEY = "3b56c485-bceb-4c31-9150-47b5db077c2b"
 const FORM_ENDPOINT = "https://api.web3forms.com/submit"
 const FORM_TIMEOUT_MS = 15000
-
-const faqs = [
-  [
-    "Сколько времени занимает разработка сайта?",
-    "Срок зависит от формата, сложности и объёма проекта. После обсуждения задачи согласуем сроки индивидуально.",
-  ],
-  [
-    "Что нужно подготовить перед началом работы?",
-    "Достаточно понимания своей идеи или задачи. Структуру, содержание и необходимые материалы можно обсудить вместе.",
-  ],
-  [
-    "Нужно ли самостоятельно писать тексты и искать фотографии?",
-    "Всё зависит от проекта и исходных материалов. Обсудим, что уже есть и что потребуется подготовить дополнительно.",
-  ],
-  [
-    "Можно ли будет самостоятельно редактировать сайт?",
-    "Да, если проект предусматривает индивидуальную админ-панель. Она позволяет изменять содержание сайта. Без неё для редактирования может понадобиться помощь разработчика.",
-  ],
-  [
-    "Входят ли домен и хостинг в стоимость?",
-    "Нет, домен и хостинг оплачиваются отдельно.",
-  ],
-  [
-    "Сколько правок предусмотрено?",
-    "Предусмотрено до пяти небольших раундов правок в рамках согласованного задания. Изменения функциональности и объёма обсуждаются отдельно.",
-  ],
-  [
-    "Предусмотрена ли поддержка после запуска?",
-    "Да, предусмотрено 14 дней гарантийной поддержки после сдачи проекта.",
-  ],
-  [
-    "Можно ли доработать сайт в будущем?",
-    "Да. Можно добавить новые разделы и функции. Объём доработок обсуждается отдельно.",
-  ],
-  [
-    "Что делать, если я пока не знаю, какой сайт мне нужен?",
-    "Это нормально. Обсудим задачу, особенности бизнеса и подберём подходящий формат.",
-  ],
-]
 
 function Arrow() {
   return (
@@ -458,7 +157,8 @@ function ProjectVisual({
   decorative?: boolean
 }) {
   const kind = project.visual
-  if (!project.image) return null
+  const src = project.imageUrl || project.image
+  if (!src) return null
   return (
     <div
       className={`project-visual project-${kind} has-mockup`}
@@ -466,7 +166,7 @@ function ProjectVisual({
     >
       <img
         className="project-mockup"
-        src={project.image}
+        src={src}
         alt={decorative ? "" : project.title}
       />
     </div>
@@ -474,9 +174,16 @@ function ProjectVisual({
 }
 
 export default function App() {
+  const { content } = useSiteContent()
+  const services = content.services
+  const projects = content.projects
+  const priceOffers = content.prices
+  const steps = content.steps
+  const faqs = content.faqs
+  const CONTACT_EMAIL = content.contacts.email
   const [menuOpen, setMenuOpen] = useState(false)
   const [filter, setFilter] = useState("Все")
-  const [project, setProject] = useState<typeof projects[number] | null>(null)
+  const [project, setProject] = useState<Project | null>(null)
   const [leaflet, setLeaflet] = useState<Leaflet | null>(null)
   const [briefOpen, setBriefOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
@@ -986,17 +693,17 @@ export default function App() {
       <section className="hero" id="top" data-surface="dark">
         <div className="hero-copy">
           <h1>
-            <CharReveal text="Цифровые" mode="auto" delay={60} stagger={34} />
+            <CharReveal text={content.hero.line1} mode="auto" delay={60} stagger={34} />
             <br />
             <CharReveal
-              text="пространства"
+              text={content.hero.line2}
               mode="auto"
               delay={320}
               stagger={32}
             />
             <br />
             <CharReveal
-              text="с характером"
+              text={content.hero.line3}
               as="i"
               className="hero-line-italic"
               mode="auto"
@@ -1005,14 +712,13 @@ export default function App() {
             />
           </h1>
           <p className="hero-reveal" style={{ "--d": "380ms" } as CSSProperties}>
-            Делаю сайты, в которых внешний вид не спорит с задачей: структура
-            понятна, а путь к заявке короткий.
+            {content.hero.description}
           </p>
           <span
             className="hero-formats hero-reveal"
             style={{ "--d": "480ms" } as CSSProperties}
           >
-            Цифровые визитки · Лендинги · Многостраничные сайты
+            {content.hero.formats}
           </span>
           <button
             className="primary-button hero-reveal hero-cta"
@@ -1020,7 +726,7 @@ export default function App() {
             style={{ "--d": "580ms" } as CSSProperties}
             onClick={openBrief}
           >
-            Обсудить проект <Arrow />
+            {content.hero.ctaLabel} <Arrow />
           </button>
         </div>
         <figure
@@ -1028,14 +734,14 @@ export default function App() {
           style={{ "--d": "220ms" } as CSSProperties}
         >
           <div className="hero-portrait-frame">
-            <img src={yanaFlowers} alt="Яна Москвина с букетом цветов" />
+            <img src={content.hero.imageUrl} alt={content.hero.imageAlt} />
           </div>
         </figure>
         <div
           className="hero-manifesto hero-reveal"
           style={{ "--d": "680ms" } as CSSProperties}
         >
-          ЭСТЕТИКА / СТРУКТУРА / СМЫСЛ
+          {content.hero.manifesto}
         </div>
       </section>
 
@@ -1047,22 +753,7 @@ export default function App() {
         <div>
           {Array.from({ length: 2 }, (_, copy) => (
             <span className="marquee-track" key={copy} aria-hidden={copy > 0}>
-              {[
-                "Веб-дизайн",
-                "Цифровые страницы",
-                "Визуальные концепции",
-                "Продуманная структура",
-                "Сайты с характером",
-                "Дизайн для брендов",
-                "Эстетика и смысл",
-                "Веб-дизайн",
-                "Цифровые страницы",
-                "Визуальные концепции",
-                "Продуманная структура",
-                "Сайты с характером",
-                "Дизайн для брендов",
-                "Эстетика и смысл",
-              ].map((phrase, index) => (
+              {[...content.marquee, ...content.marquee].map((phrase, index) => (
                 <span key={`${copy}-${index}`}>
                   {phrase}
                   <i />
@@ -1075,83 +766,78 @@ export default function App() {
 
       <section className="about section-pad" id="about" data-surface="light">
         <div className="about-title">
-          <span className="eyebrow">За кадром / Обо мне</span>
+          <span className="eyebrow">{content.about.eyebrow}</span>
           <h2>
             <CharReveal
-              text="За дизайном"
+              text={content.about.titleLine1}
               className="about-title-line"
               stagger={30}
             />
             <br />
             <span className="about-title-line">
-              <CharReveal text="стоит " delay={280} stagger={30} />
-              <CharReveal text="человек" as="i" delay={420} stagger={34} />
+              <CharReveal text={content.about.titleLine2a} delay={280} stagger={30} />
+              <CharReveal text={content.about.titleLine2b} as="i" delay={420} stagger={34} />
             </span>
           </h2>
         </div>
         <figure className="about-main-photo" data-reveal>
           <img
-            src={yanaEditorial}
-            alt="Яна Москвина у зеркала"
+            src={content.about.mainImageUrl}
+            alt={content.about.mainImageAlt}
             loading="lazy"
           />
           <figcaption>
-            Яна Москвина
+            {content.about.captionName}
             <br />
-            Веб-дизайнер
+            {content.about.captionRole}
           </figcaption>
         </figure>
         <blockquote className="about-quote">
-          «Красота привлекает внимание.
-          <br />
-          Структура превращает его в интерес».
+          {content.about.quote.split("\n").map((line, i, arr) => (
+            <span key={i}>
+              {line}
+              {i < arr.length - 1 ? <br /> : null}
+            </span>
+          ))}
         </blockquote>
         <div className="about-copy">
           <span className="dropcap">Я</span>
-          <p>
-            {" "}
-            — Москвина Яна, веб-дизайнер. Собираю страницы для услуг, запусков
-            и брендов. Сначала разбираюсь в задаче и аудитории, затем в
-            структуре — и только потом в визуале.
-          </p>
-          <p>
-            Образование в сфере маркетинга и рекламы помогает мне точнее видеть
-            позиционирование бренда и сильные стороны продукта. AI-инструменты я
-            использую для поиска идей, визуальных экспериментов и ускорения
-            отдельных процессов, но концепция, структура, композиция и финальные
-            решения всегда остаются за мной.
-          </p>
+          <p>{" "}{content.about.body1}</p>
+          <p>{content.about.body2}</p>
         </div>
         <div className="about-aside">
           <figure className="about-detail-photo">
-            <img src={yanaBw} alt="Туфли на геометрическом полу" loading="lazy" />
+            <img src={content.about.detailImageUrl} alt={content.about.detailImageAlt} loading="lazy" />
           </figure>
           <div className="about-note">
-            ЭСТЕТИКА
-            <br />
-            СТРУКТУРА
-            <br />
-            СМЫСЛ
+            {content.about.asideNote.split("\n").map((line, i, arr) => (
+              <span key={i}>
+                {line}
+                {i < arr.length - 1 ? <br /> : null}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
       <section className="services section-pad" id="services" data-surface="light">
         <div className="section-heading">
-          <span className="eyebrow">Услуги / 01—03</span>
+          <span className="eyebrow">{content.servicesIntro.eyebrow}</span>
           <h2>
-            <CharReveal text="Что могу" stagger={30} />
+            <CharReveal text={content.servicesIntro.titleLine1} stagger={30} />
             <br />
-            <CharReveal text="создать?" as="i" delay={260} stagger={34} />
+            <CharReveal
+              text={content.servicesIntro.titleLine2}
+              as="i"
+              delay={260}
+              stagger={34}
+            />
           </h2>
-          <p>
-            Три формата под разные задачи: визитка, лендинг и сайт из
-            нескольких разделов.
-          </p>
+          <p>{content.servicesIntro.description}</p>
         </div>
         <div className="service-list">
           {services.map((service) => (
-            <article className="service-card" key={service.n}>
+            <article className="service-card" key={service.id || service.n}>
               <span className="service-number">{service.n}</span>
               <div className="service-copy">
                 <h3>{service.title}</h3>
@@ -1163,21 +849,20 @@ export default function App() {
                   className="text-link"
                   onClick={() => openLeaflet(service.detail)}
                 >
-                  Подробнее <Arrow />
+                  {service.buttonLabel || "Подробнее"} <Arrow />
                 </button>
               </div>
               <div
-                className={`service-preview ${service.visual}`}
+                className={`service-preview ${service.visual} has-image`}
                 aria-hidden="true"
               >
-                <div className="mini-nav">
-                  <span />
-                  <span />
-                </div>
-                <strong>
-                  {service.visual === "visiting" ? "Визитка" : service.title}
-                </strong>
-                <i />
+                <img
+                  className="service-preview-image"
+                  src={service.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             </article>
           ))}
@@ -1223,7 +908,7 @@ export default function App() {
                   {priceOffers.map((offer, index) => (
                     <article
                       className={index === 1 ? "featured" : ""}
-                      key={offer.title}
+                      key={offer.id || offer.title}
                     >
                       <span className="letter-number">
                         {String(index + 1).padStart(2, "0")}
@@ -1265,17 +950,19 @@ export default function App() {
       <section className="portfolio section-pad" id="portfolio" data-surface="dark">
         <div className="portfolio-head">
           <div>
-            <span className="eyebrow">Избранные работы / 2026</span>
+            <span className="eyebrow">{content.portfolioIntro.eyebrow}</span>
             <h2>
-              <CharReveal text="Мои работы" stagger={30} />
+              <CharReveal text={content.portfolioIntro.titleLine1} stagger={30} />
               <br />
-              <CharReveal text="и концепты" as="i" delay={280} stagger={34} />
+              <CharReveal
+                text={content.portfolioIntro.titleLine2}
+                as="i"
+                delay={280}
+                stagger={34}
+              />
             </h2>
           </div>
-          <p>
-            Запущенные сайты и концепты: кемпинг, глэмпинг, маркетплейс и
-            портфолио разработчика.
-          </p>
+          <p>{content.portfolioIntro.description}</p>
         </div>
         <div className="filters" role="group" aria-label="Фильтр проектов">
           {["Все", ...new Set(projects.map((item) => item.category))].map((category) => (
@@ -1290,7 +977,7 @@ export default function App() {
         </div>
         <div className="project-grid">
           {visibleProjects.map((item, index) => (
-            <article className="project-card" key={item.title}>
+            <article className="project-card" key={item.id || item.title}>
               <button
                 type="button"
                 className="project-card-media"
@@ -1338,11 +1025,11 @@ export default function App() {
           <img src={yanaPortrait} alt="Яна Москвина" loading="lazy" data-reveal />
         </div>
         <div className="steps">
-          {steps.map(([n, title, text]) => (
-            <article key={n}>
-              <span>{n}</span>
-              <h3>{title}</h3>
-              <p>{text}</p>
+          {steps.map((step) => (
+            <article key={step.id || step.n}>
+              <span>{step.n}</span>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
             </article>
           ))}
         </div>
@@ -1358,8 +1045,11 @@ export default function App() {
           </h2>
         </div>
         <div className="faq-list">
-          {faqs.map(([question, answer], index) => (
-            <article className={openFaq === index ? "open" : ""} key={question}>
+          {faqs.map((faq, index) => (
+            <article
+              className={openFaq === index ? "open" : ""}
+              key={faq.id || faq.question}
+            >
               <button
                 type="button"
                 id={`faq-trigger-${index}`}
@@ -1368,7 +1058,7 @@ export default function App() {
                 aria-controls={`faq-panel-${index}`}
               >
                 <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{question}</strong>
+                <strong>{faq.question}</strong>
                 <i />
               </button>
               <div
@@ -1376,7 +1066,7 @@ export default function App() {
                 role="region"
                 aria-labelledby={`faq-trigger-${index}`}
               >
-                <p>{answer}</p>
+                <p>{faq.answer}</p>
               </div>
             </article>
           ))}
@@ -1387,45 +1077,52 @@ export default function App() {
         <div className="final-cta-main">
           <span className="eyebrow">Есть идея для проекта?</span>
           <h2>
-            <CharReveal text="Ваш следующий" className="cta-line" stagger={28} />
             <CharReveal
-              text="проект начинается"
+              text={content.contacts.ctaTitle}
               className="cta-line"
-              delay={360}
               stagger={28}
             />
-            <CharReveal text="здесь" as="i" delay={820} stagger={36} />
           </h2>
           <div className="final-cta-group">
-            <p>
-              Расскажите, что хочется создать. Начнём с живого разговора — без
-              сложных анкет и готовых решений.
-            </p>
+            <p>{content.contacts.ctaText}</p>
             <button className="light-button" type="button" onClick={openBrief}>
-              Обсудить проект <Arrow />
+              {content.contacts.ctaButton} <Arrow />
             </button>
             <div className="socials">
-              <a
-                href="https://www.instagram.com/elfiaannka/"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <SocialIcon name="instagram" /> Instagram <Arrow />
-              </a>
-              <a href="https://t.me/anntelegram" target="_blank" rel="noreferrer noopener">
-                <SocialIcon name="telegram" /> Telegram <Arrow />
-              </a>
-              <a
-                href="https://max.ru/u/f9LHodD0cOJc1XjY6e_iWtirE3b_NsmNwEy8XSkJaU2FLf0Z5PYJNrfUfvY"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <SocialIcon name="max" /> MAX <Arrow />
-              </a>
-              <a href="mailto:yana.moskwina.99@gmail.com">
+              {content.contacts.instagramUrl ? (
+                <a
+                  href={content.contacts.instagramUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <SocialIcon name="instagram" /> Instagram <Arrow />
+                </a>
+              ) : null}
+              {content.contacts.telegramUrl ? (
+                <a
+                  href={content.contacts.telegramUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <SocialIcon name="telegram" /> Telegram <Arrow />
+                </a>
+              ) : null}
+              {content.contacts.maxUrl ? (
+                <a
+                  href={content.contacts.maxUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <SocialIcon name="max" /> MAX <Arrow />
+                </a>
+              ) : null}
+              <a href={`mailto:${content.contacts.email}`}>
                 <SocialIcon name="mail" /> Почта <Arrow />
               </a>
-              <a href="tel:+79222952912" aria-label="Позвонить +7 (922) 295-29-12">
+              <a
+                href={content.contacts.phoneHref}
+                aria-label={`Позвонить ${content.contacts.phone}`}
+              >
                 <SocialIcon name="phone" /> Телефон <Arrow />
               </a>
             </div>

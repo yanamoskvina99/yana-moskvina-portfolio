@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ym-designer.ru/sitemap.xml
